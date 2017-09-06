@@ -46,11 +46,11 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 
 func main() {
 	// Declaring variables for flags
-	var APIKey, APIBase, Namespace, Project string
+	var Token, APIBase, Namespace, Project string
 	var Advance int
 	APIBase = "lol"
 	// Command Line Parsing Starts
-	flag.StringVar(&APIKey, "Token", "lol", "Gitlab api key/token.")
+	flag.StringVar(&Token, "Token", "lol", "Gitlab api key/token.")
 	flag.StringVar(&APIBase, "baseURL", " ", "Gitlab api base url")
 	flag.StringVar(&Namespace, "Namespace", " ", "Namespace to use in Gitlab")
 	flag.StringVar(&Project, "ProjectName", " ", "Project to use in Gitlab")
@@ -60,5 +60,5 @@ func main() {
 	// Initializing logger
 	LoggerSetup(os.Stdout)
 	//logger.Println("info")
-	getProjectID(APIBase, APIKey, Project, Namespace)
+	getProjectID(APIBase, Token, Project, Namespace)
 }
