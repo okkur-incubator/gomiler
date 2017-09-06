@@ -1,29 +1,65 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+)
 
-func get_project_id(base_url string, token string, projectname string, namespace string) string {
-	headers := map[string]string{"PrivateToken": token}
-	url := "https://" + base_url + "/projects"
-	page := 1
-	for {
+var logger *log.Logger
 
-	}
-
+//LoggerSetup Initialization
+func LoggerSetup(info io.Writer) {
+	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-//func get_milestones(base_url string, token string, project_id string)[]string{}
-//func create_milestone_data(advance int) []string{}
-//func create_milestones(base_url string, token string, project_id string, milestones string) string{}
+func getProjectID(BaseURL string, Token string, Projectname string, Namespace string) string {
+	urls := "https://" + BaseURL + "/projects"
+	page := 1
+	strPage := strconv.Itoa(page)
+	s := []string{urls, "?page=", strPage}
+	completeURL := strings.Join(s, "")
+	for {
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", completeURL, nil)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		req.Header.Add("Token", "text/plain")
+		req.Header.Add("User-Agent", "SampleClient/1.0")
+		resp, err := client.Do(req)
+		if err != nil {
+			fmt.Print(err)
+			break
+		}
+		defer resp.Body.Close()
+		io.Copy(os.Stdout, resp.Body)
+		return "xjson" // JSON part to be added
+	}
+	return "json" // JSON part to be added
+}
 
 func main() {
-	var apiKey, apiBase, namespace, project string
-	var advance int
-	flag.StringVar(&apiKey, "token", " ", "Gitlab api key/token.")
-	flag.StringVar(&apiBase, "base_url", " ", "Gitlab api base url")
-	flag.StringVar(&namespace, "namespace", " ", "Namespace to use in Gitlab")
-	flag.StringVar(&project, "projectname", " ", "Project to use in Gitlab")
-	flag.IntVar(&advance, "Advance", 30, "Define timeframe to generate milestones in advance.")
-	flag.Parse()
+	// Declaring variables for flags
+	var APIKey, APIBase, Namespace, Project string
+	var Advance int
+	APIBase = "lol"
+	// Command Line Parsing Starts
+	flag.StringVar(&APIKey, "Token", "lol", "Gitlab api key/token.")
+	flag.StringVar(&APIBase, "BaseURL", " ", "Gitlab api base url")
+	flag.StringVar(&Namespace, "Namespace", " ", "Namespace to use in Gitlab")
+	flag.StringVar(&Project, "ProjectName", " ", "Project to use in Gitlab")
+	flag.IntVar(&Advance, "Advance", 30, "Define timeframe to generate milestones in advance.")
+	flag.Parse() //Command Line Parsing Ends
 
+	// Initializing logger
+	LoggerSetup(os.Stdout)
+	//logger.Println("info")
+	getProjectID(APIBase, APIKey, Project, Namespace)
 }
