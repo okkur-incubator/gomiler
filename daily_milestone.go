@@ -18,8 +18,8 @@ func LoggerSetup(info io.Writer) {
 	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func getProjectID(BaseURL string, Token string, Projectname string, Namespace string) string {
-	urls := "https://" + BaseURL + "/projects"
+func getProjectID(baseURL string, Token string, Projectname string, Namespace string) string {
+	urls := "https://" + baseURL + "/projects"
 	page := 1
 	strPage := strconv.Itoa(page)
 	s := []string{urls, "?page=", strPage}
@@ -31,8 +31,7 @@ func getProjectID(BaseURL string, Token string, Projectname string, Namespace st
 			fmt.Println(err)
 			break
 		}
-		req.Header.Add("Token", "text/plain")
-		req.Header.Add("User-Agent", "SampleClient/1.0")
+		req.Header.Add("Token", Token)
 		resp, err := client.Do(req)
 		if err != nil {
 			fmt.Print(err)
@@ -52,7 +51,7 @@ func main() {
 	APIBase = "lol"
 	// Command Line Parsing Starts
 	flag.StringVar(&APIKey, "Token", "lol", "Gitlab api key/token.")
-	flag.StringVar(&APIBase, "BaseURL", " ", "Gitlab api base url")
+	flag.StringVar(&APIBase, "baseURL", " ", "Gitlab api base url")
 	flag.StringVar(&Namespace, "Namespace", " ", "Namespace to use in Gitlab")
 	flag.StringVar(&Project, "ProjectName", " ", "Project to use in Gitlab")
 	flag.IntVar(&Advance, "Advance", 30, "Define timeframe to generate milestones in advance.")
