@@ -15,18 +15,20 @@ import (
 )
 
 // Struct to be used for milestone
-//Milestone ....
+// Milestone ....
 type gitLabAPI struct {
-	ID          int        `json:"id"`
-	Iid         int        `json:"iid"`
-	ProjectID   int        `json:"project_id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	StartDate   string     `json:"start_date"`
-	DueDate     string     `json:"due_date"`
-	State       string     `json:"state"`
-	UpdatedAt   *time.Time `json:"updated_at"`
-	CreatedAt   *time.Time `json:"created_at"`
+	ID          int               `json:"id"`
+	Iid         int               `json:"iid"`
+	ProjectID   int               `json:"project_id"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	StartDate   string            `json:"start_date"`
+	DueDate     string            `json:"due_date"`
+	State       string            `json:"state"`
+	UpdatedAt   *time.Time        `json:"updated_at"`
+	CreatedAt   *time.Time        `json:"created_at"`
+	Name        string            `json:"name"`
+	NameSpace   map[string]string `json:"namespace"`
 }
 
 // Initialization of logging variable
@@ -66,9 +68,35 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 		json.Unmarshal(respByte, project)
 		defer resp.Body.Close()
 		fmt.Println(resp.Body)
-		return "json" // JSON part to be added
+		fmt.Println(project)
+		if project.Name == "message" {
+			fmt.Println(project.Name)
+		}
+		if project.Name == Projectname && project.NameSpace["path"] == Namespace {
+			return strconv.Itoa(project.ID)
+		}
+		if project.Title == "" {
+			break
+		}
+		page++
 	}
-	return "json" // JSON part to be added
+	return strconv.Itoa(project.ID)
+}
+
+// CreateMilestoneData is the Function similar to Create_Milestone_Data in the Python implementation
+func CreateMilestoneData(Advance int) []string {
+	today := time.Now().Local()
+	i := 0
+	list := []string{}
+	for i < Advance {
+		date := today.AddDate(0, 0, i)
+		dateiso := date.Format("2009-01-02")                            // To Format to ISOFormat and it converts to string so can be used in list directly
+		datelist := []string{"Title: ", "dateiso", "due_date", dateiso} // Was unable to get a map in a list so made this
+		y := strings.Join(datelist, ",")
+		list = append(list, y)
+		i++
+	}
+	return list
 }
 
 func main() {
@@ -88,4 +116,5 @@ func main() {
 	LoggerSetup(os.Stdout)
 	// Calling getProjectID
 	getProjectID(APIBase, Token, Project, Namespace)
+	CreateMilestoneData(Advance)
 }
