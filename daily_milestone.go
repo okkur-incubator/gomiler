@@ -44,10 +44,12 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 	project := gitLabAPI{}
 	urls := "https://" + baseURL + "/projects"
 	page := 1
-	strPage := strconv.Itoa(page)
-	s := []string{urls, "?page=", strPage}
-	completeURL := strings.Join(s, "")
+
 	for {
+
+		strPage := strconv.Itoa(page)
+		s := []string{urls, "?page=", strPage}
+		completeURL := strings.Join(s, "")
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", completeURL, nil)
 		if err != nil {
@@ -83,22 +85,37 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 	return strconv.Itoa(project.ID)
 }
 
-// CreateMilestoneData is the Function similar to Create_Milestone_Data in the Python implementation
-func CreateMilestoneData(Advance int) []string {
+// CreateMilestoneData is used to check the due date using the time package of python
+func createMilestoneData(advance int) []string {
 	today := time.Now().Local()
-	i := 0
 	list := []string{}
-	for i < Advance {
+	for i := 0; i < advance; i++ {
 		date := today.AddDate(0, 0, i)
 		dateiso := date.Format("2009-01-02")                            // To Format to ISOFormat and it converts to string so can be used in list directly
 		datelist := []string{"Title: ", "dateiso", "due_date", dateiso} // Was unable to get a map in a list so made this
 		y := strings.Join(datelist, ",")
 		list = append(list, y)
-		i++
+
 	}
 	return list
 }
 
+func createMilestones(baseURL string, token string, projectID string, milestones []string) string {
+	strurl := []string{"https://", baseURL, "/projects", projectID, "/milestones"}
+	url := strings.Join(strurl, ",")
+
+	for _, m := range milestones {
+		req, err := http.NewRequest("POST", url, nil)
+		if err != nil {
+			logger.Println(err)
+			break
+		}
+		req.Header.Add("", m)
+		req.Header.Add("Private-Token", token)
+
+	}
+	return "Milestones Created" + strings.Join(milestones, ",")
+}
 func main() {
 	// Declaring variables for flags
 	var Token, APIBase, Namespace, Project string
@@ -116,5 +133,5 @@ func main() {
 	LoggerSetup(os.Stdout)
 	// Calling getProjectID
 	getProjectID(APIBase, Token, Project, Namespace)
-	CreateMilestoneData(Advance)
+	createMilestoneData(Advance)
 }
