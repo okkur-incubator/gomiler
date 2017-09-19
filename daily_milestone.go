@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -56,7 +57,7 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 			logger.Println(err)
 			break
 		}
-		req.Header.Add("Token", Token)
+		req.Header.Add("PRIVATE-TOKEN", Token)
 		resp, err := client.Do(req)
 		if err != nil {
 			logger.Println(err)
@@ -85,7 +86,53 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 	return strconv.Itoa(project.ID)
 }
 
-// CreateMilestoneData is used to check the due date using the time package of python
+func getMilestones(baseURL string, token string, projectID string) []string {
+	project := gitLabAPI{}
+	list := []string{}
+	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
+
+	page := 1
+
+	for {
+		url := strings.Join(strurl, ",")
+		client := &http.Client{}
+		re := regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			logger.Println(err)
+			break
+		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			logger.Println(err)
+			break
+		}
+		respByte, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			logger.Println("fail to read response data")
+			break
+		}
+		if project.State != "closed" && re.MatchString(project.Title) {
+
+			titleList := []string{"Title: ", project.Title, "due_date", project.DueDate}
+			y := strings.Join(titleList, ",")
+			list = append(list, y)
+		}
+
+		json.Unmarshal(respByte, project)
+		defer resp.Body.Close()
+
+		if project.Name == "" {
+			break
+		}
+		page++
+
+	}
+	return list
+}
+
+// CreateMilestoneData is used to check the due date using the time package of golang
 func createMilestoneData(advance int) []string {
 	today := time.Now().Local()
 	list := []string{}
@@ -101,9 +148,9 @@ func createMilestoneData(advance int) []string {
 }
 
 func createMilestones(baseURL string, token string, projectID string, milestones []string) string {
-	strurl := []string{"https://", baseURL, "/projects", projectID, "/milestones"}
+	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
 	url := strings.Join(strurl, ",")
-
+	client := &http.Client{}
 	for _, m := range milestones {
 		req, err := http.NewRequest("POST", url, nil)
 		if err != nil {
@@ -111,10 +158,15 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 			break
 		}
 		req.Header.Add("", m)
-		req.Header.Add("Private-Token", token)
-
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			logger.Println(err)
+			break
+		}
+		defer resp.Body.Close()
 	}
-	return "Milestones Created" + strings.Join(milestones, ",")
+	return ("Milestones Created" + strings.Join(milestones, ","))
 }
 func main() {
 	// Declaring variables for flags
@@ -132,6 +184,24 @@ func main() {
 	// Initializing logger
 	LoggerSetup(os.Stdout)
 	// Calling getProjectID
-	getProjectID(APIBase, Token, Project, Namespace)
-	createMilestoneData(Advance)
+	if Token == "" || APIBase == "" || Namespace == "" || Project == "" {
+		message := "Please provide all necessary Gitlab settings. \n See --help for more information."
+		logger.Println(message)
+	} else {
+		projectID := getProjectID(APIBase, Token, Project, Namespace)
+		newMilestone := getMilestones(APIBase, Token, projectID)
+		oldMilestone := createMilestoneData(Advance)
+
+		for index, y := range newMilestone {
+			for _, z := range oldMilestone {
+				if z == y {
+					newMilestone = append(newMilestone[:index], newMilestone[(index+1):]...)
+				}
+			}
+
+		}
+		message := createMilestones(APIBase, Token, projectID, newMilestone)
+		logger.Println(message)
+	}
+
 }
