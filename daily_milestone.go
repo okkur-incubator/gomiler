@@ -90,11 +90,13 @@ func getMilestones(baseURL string, token string, projectID string) []string {
 	project := gitLabAPI{}
 	list := []string{}
 	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
-
+	urls := strings.Join(strurl, ",")
 	page := 1
 
 	for {
-		url := strings.Join(strurl, ",")
+		strPage := strconv.Itoa(page)
+		s := []string{urls, "?page=", strPage}
+		url := strings.Join(s, ",")
 		client := &http.Client{}
 		re := regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
 		req, err := http.NewRequest("GET", url, nil)
