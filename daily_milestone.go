@@ -73,7 +73,7 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 		fmt.Println(resp.Body)
 		fmt.Println(project)
 		if project.Name == "message" {
-			fmt.Println(project.Name)
+			logger.Println(project.Name)
 		}
 		if project.Name == Projectname && project.NameSpace["path"] == Namespace {
 			return strconv.Itoa(project.ID)
@@ -186,24 +186,20 @@ func main() {
 	// Initializing logger
 	LoggerSetup(os.Stdout)
 	// Calling getProjectID
-	if Token == "" || APIBase == "" || Namespace == "" || Project == "" {
-		message := "Please provide all necessary Gitlab settings. \n See --help for more information."
-		logger.Println(message)
-	} else {
-		projectID := getProjectID(APIBase, Token, Project, Namespace)
-		newMilestone := getMilestones(APIBase, Token, projectID)
-		oldMilestone := createMilestoneData(Advance)
 
-		for index, y := range newMilestone {
-			for _, z := range oldMilestone {
-				if z == y {
-					newMilestone = append(newMilestone[:index], newMilestone[(index+1):]...)
-				}
+	projectID := getProjectID(APIBase, Token, Project, Namespace)
+	newMilestone := getMilestones(APIBase, Token, projectID)
+	oldMilestone := createMilestoneData(Advance)
+
+	for index, y := range newMilestone {
+		for _, z := range oldMilestone {
+			if z == y {
+				newMilestone = append(newMilestone[:index], newMilestone[(index+1):]...)
 			}
-
 		}
-		message := createMilestones(APIBase, Token, projectID, newMilestone)
-		logger.Println(message)
+
 	}
+	message := createMilestones(APIBase, Token, projectID, newMilestone)
+	logger.Println(message)
 
 }
