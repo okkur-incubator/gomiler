@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -70,8 +69,8 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 		}
 		json.Unmarshal(respByte, project)
 		defer resp.Body.Close()
-		fmt.Println(resp.Body)
-		fmt.Println(project)
+		logger.Println(resp.Body)
+		logger.Println(project)
 		if project.Name == "message" {
 			logger.Println(project.Name)
 		}
