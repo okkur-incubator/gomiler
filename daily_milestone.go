@@ -90,13 +90,13 @@ func getMilestones(baseURL string, token string, projectID string) []string {
 	project := gitLabAPI{}
 	list := []string{}
 	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
-	urls := strings.Join(strurl, ",")
+	urls := strings.Join(strurl, "")
 	page := 1
 
 	for {
 		strPage := strconv.Itoa(page)
 		s := []string{urls, "?page=", strPage}
-		url := strings.Join(s, ",")
+		url := strings.Join(s, "")
 		client := &http.Client{}
 		re := regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
 		req, err := http.NewRequest("GET", url, nil)
@@ -174,9 +174,8 @@ func main() {
 	// Declaring variables for flags
 	var Token, APIBase, Namespace, Project string
 	var Advance int
-	APIBase = "lol"
 	// Command Line Parsing Starts
-	flag.StringVar(&Token, "Token", "lol", "Gitlab api key/token.")
+	flag.StringVar(&Token, "Token", " ", "Gitlab api key/token.")
 	flag.StringVar(&APIBase, "baseURL", " ", "Gitlab api base url")
 	flag.StringVar(&Namespace, "Namespace", " ", "Namespace to use in Gitlab")
 	flag.StringVar(&Project, "ProjectName", " ", "Project to use in Gitlab")

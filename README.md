@@ -1,4 +1,2 @@
 # dailymile
-Incomplete right now
-Need to work on logging and Http
-Parsing done 
+it has been completed uptill the point it shows milestone created, rest will be completed with time. 
