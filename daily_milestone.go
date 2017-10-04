@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -42,7 +43,8 @@ func LoggerSetup(info io.Writer) {
 // Function to get project ID from the gitLabAPI
 func getProjectID(baseURL string, Token string, Projectname string, Namespace string) string {
 	project := gitLabAPI{}
-	urls := "https://" + baseURL + "/projects"
+	urls := "https://" + baseURL + "/api/v4" + "/projects"
+	fmt.Println(urls)
 	page := 1
 
 	for {
@@ -58,6 +60,8 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 		}
 		req.Header.Add("PRIVATE-TOKEN", Token)
 		resp, err := client.Do(req)
+		fmt.Println("req")
+		fmt.Println(req)
 		if err != nil {
 			logger.Println(err)
 			break
@@ -67,8 +71,11 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 			logger.Println("fail to read response data")
 			break
 		}
-		json.Unmarshal(respByte, project)
+		json.Unmarshal(respByte, &project)
 		defer resp.Body.Close()
+		fmt.Println(resp.Body)
+		fmt.Println(project)
+		fmt.Println(project.ID)
 		logger.Println(resp.Body)
 		logger.Println(project)
 		if project.Name == "message" {
@@ -77,10 +84,13 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 		if project.Name == Projectname && project.NameSpace["path"] == Namespace {
 			return strconv.Itoa(project.ID)
 		}
+		fmt.Println(project.ID)
+		fmt.Println(project.Title)
 		if project.Title == "" {
 			break
 		}
 		page++
+		fmt.Print(page)
 	}
 	return strconv.Itoa(project.ID)
 }
@@ -89,7 +99,9 @@ func getMilestones(baseURL string, token string, projectID string) []string {
 	project := gitLabAPI{}
 	list := []string{}
 	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
+	fmt.Println(strurl)
 	urls := strings.Join(strurl, "")
+	fmt.Println(urls)
 	page := 1
 
 	for {
@@ -121,7 +133,7 @@ func getMilestones(baseURL string, token string, projectID string) []string {
 			list = append(list, y)
 		}
 
-		json.Unmarshal(respByte, project)
+		json.Unmarshal(respByte, &project)
 		defer resp.Body.Close()
 
 		if project.Name == "" {
@@ -139,12 +151,13 @@ func createMilestoneData(advance int) []string {
 	list := []string{}
 	for i := 0; i < advance; i++ {
 		date := today.AddDate(0, 0, i)
-		dateiso := date.Format("2009-01-02")                            // To Format to ISOFormat and it converts to string so can be used in list directly
-		datelist := []string{"Title: ", "dateiso", "due_date", dateiso} // Was unable to get a map in a list so made this
-		y := strings.Join(datelist, ",")
+		dateiso := date.Format("2017-01-02") // To Format to ISOFormat and it converts to string so can be used in list directly
+		datelist := []string{dateiso}        // Was unable to get a map in a list so made this
+		y := strings.Join(datelist, "")
 		list = append(list, y)
 
 	}
+
 	return list
 }
 
@@ -167,7 +180,7 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 		}
 		defer resp.Body.Close()
 	}
-	return ("Milestones Created" + strings.Join(milestones, ","))
+	return ("Milestones Created" + strings.Join(milestones, ""))
 }
 func main() {
 	// Declaring variables for flags
@@ -198,6 +211,7 @@ func main() {
 
 	}
 	message := createMilestones(APIBase, Token, projectID, newMilestone)
+	fmt.Println(message)
 	logger.Println(message)
 
 }
