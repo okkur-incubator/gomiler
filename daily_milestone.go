@@ -58,7 +58,7 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 			logger.Println(err)
 			break
 		}
-		req.Header.Add("PRIVATE-TOKEN", Token)
+		//req.Header.Add("PRIVATE-TOKEN", Token)
 		resp, err := client.Do(req)
 		fmt.Println("req")
 		fmt.Println(req)
@@ -66,12 +66,16 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 			logger.Println(err)
 			break
 		}
+		fmt.Println(resp.Body)
 		respByte, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			logger.Println("fail to read response data")
 			break
 		}
-		json.Unmarshal(respByte, &project)
+		errjson := json.Unmarshal(respByte, &project)
+		if errjson != nil {
+			logger.Println(errjson)
+		}
 		defer resp.Body.Close()
 		fmt.Println(resp.Body)
 		fmt.Println(project)
@@ -97,9 +101,9 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 
 func getMilestones(baseURL string, token string, projectID string) []string {
 	project := gitLabAPI{}
+	fmt.Println(project)
 	list := []string{}
 	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
-	fmt.Println(strurl)
 	urls := strings.Join(strurl, "")
 	fmt.Println(urls)
 	page := 1
@@ -115,7 +119,7 @@ func getMilestones(baseURL string, token string, projectID string) []string {
 			logger.Println(err)
 			break
 		}
-		req.Header.Add("PRIVATE-TOKEN", token)
+		//req.Header.Add("PRIVATE-TOKEN", token)
 		resp, err := client.Do(req)
 		if err != nil {
 			logger.Println(err)
@@ -132,8 +136,11 @@ func getMilestones(baseURL string, token string, projectID string) []string {
 			y := strings.Join(titleList, ",")
 			list = append(list, y)
 		}
-
-		json.Unmarshal(respByte, &project)
+		fmt.Println(resp.Body)
+		errjson := json.Unmarshal(respByte, &project)
+		if errjson != nil {
+			logger.Println(errjson)
+		}
 		defer resp.Body.Close()
 
 		if project.Name == "" {
@@ -172,7 +179,7 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 			break
 		}
 		req.Header.Add("", m)
-		req.Header.Add("PRIVATE-TOKEN", token)
+		//req.Header.Add("PRIVATE-TOKEN", token)
 		resp, err := client.Do(req)
 		if err != nil {
 			logger.Println(err)
