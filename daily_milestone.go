@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -19,7 +18,7 @@ import (
 // Milestone ....
 type gitLabAPI struct {
 	ID          int               `json:"id"`
-	Iid         int               `json:"iid"`
+	Iid         []int             `json:"iid"`
 	ProjectID   int               `json:"project_id"`
 	Title       string            `json:"title"`
 	Description string            `json:"description"`
@@ -44,13 +43,12 @@ func LoggerSetup(info io.Writer) {
 func getProjectID(baseURL string, Token string, Projectname string, Namespace string) string {
 	project := gitLabAPI{}
 	urls := "https://" + baseURL + "/api/v4" + "/projects"
-	fmt.Println(urls)
 	page := 1
 
 	for {
 
 		strPage := strconv.Itoa(page)
-		s := []string{urls, "?page=", strPage}
+		s := []string{urls, "/", strPage, "/milestones"}
 		completeURL := strings.Join(s, "")
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", completeURL, nil)
@@ -60,13 +58,11 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 		}
 		//req.Header.Add("PRIVATE-TOKEN", Token)
 		resp, err := client.Do(req)
-		fmt.Println("req")
-		fmt.Println(req)
 		if err != nil {
 			logger.Println(err)
 			break
 		}
-		fmt.Println(resp.Body)
+
 		respByte, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			logger.Println("fail to read response data")
@@ -77,40 +73,34 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 			logger.Println(errjson)
 		}
 		defer resp.Body.Close()
-		fmt.Println(resp.Body)
-		fmt.Println(project)
-		fmt.Println(project.ID)
-		logger.Println(resp.Body)
-		logger.Println(project)
+		logger.Println(project.ID)
 		if project.Name == "message" {
 			logger.Println(project.Name)
 		}
 		if project.Name == Projectname && project.NameSpace["path"] == Namespace {
 			return strconv.Itoa(project.ID)
 		}
-		fmt.Println(project.ID)
-		fmt.Println(project.Title)
+
 		if project.Title == "" {
 			break
 		}
 		page++
-		fmt.Print(page)
+
 	}
 	return strconv.Itoa(project.ID)
 }
 
 func getMilestones(baseURL string, token string, projectID string) []string {
 	project := gitLabAPI{}
-	fmt.Println(project)
 	list := []string{}
 	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
 	urls := strings.Join(strurl, "")
-	fmt.Println(urls)
+
 	page := 1
 
 	for {
 		strPage := strconv.Itoa(page)
-		s := []string{urls, "?page=", strPage}
+		s := []string{urls, "/", strPage, "/milestones"}
 		url := strings.Join(s, "")
 		client := &http.Client{}
 		re := regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
@@ -136,9 +126,9 @@ func getMilestones(baseURL string, token string, projectID string) []string {
 			y := strings.Join(titleList, ",")
 			list = append(list, y)
 		}
-		fmt.Println(resp.Body)
 		errjson := json.Unmarshal(respByte, &project)
 		if errjson != nil {
+			logger.Println("Error")
 			logger.Println(errjson)
 		}
 		defer resp.Body.Close()
@@ -218,7 +208,6 @@ func main() {
 
 	}
 	message := createMilestones(APIBase, Token, projectID, newMilestone)
-	fmt.Println(message)
 	logger.Println(message)
 
 }
