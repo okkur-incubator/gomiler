@@ -1,0 +1,52 @@
+project:
+  name: "Dailymile"
+  state: "unstable"
+  image: ""
+  website: ""
+  oneLiner: "Daily milestone generation for Gitlab"
+  description: |
+    Generate one milestone per day within your Gitlab project.
+    Use for your Gitlab based ToDo list or sprints.
+  version: "v0.0.0"
+  mainLicense: "apache2"
+  docsLicense: "CCBySa"
+
+vision:
+  type: "community"
+  overview: |
+    Simple daily milestone generation for Gitlab.
+
+contributionLinks:
+  issueTemplate: "/.github/ISSUE_TEMPLATE.md"
+  starterIssues: "https://github.com/okkur/dailymile/labels/starter%20issue" # replace dear-github with your actual url
+
+emails:
+  commercialSupport: "support@okkur.io"
+  security: "security@okkur.io"
+  coc: "coc@okkur.io"
+
+copyright:
+  year: "2017"
+
+cla:
+  copyrightHolder: "Michael Grosser"
+
+maintainers:
+  - name: "Adeel Hussain"
+    nick: "adeilh"
+  - name: "Michael Grosser"
+    nick: "stp-ip"
+
+repo:
+  link: "https://github.com/okkur/dailymile/"
+  type: "Github"
+
+badges:
+  - image: "https://img.shields.io/badge/state-unstable-blue.svg"
+    alt: "state"
+  - image: "https://img.shields.io/github/release/okkur/dailymile.svg"
+    link: "https://github.com/okkur/dailymile/releases"
+    alt: "release"
+  - image: "https://img.shields.io/github/license/okkur/dailymile.svg"
+    link: "LICENSE"
+    alt: "license"
