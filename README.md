@@ -1,13 +1,11 @@
 # Dailymile
 
-
 Daily milestone generation for Gitlab
 
  [![state](https://img.shields.io/badge/state-unstable-blue.svg)]() [![release](https://img.shields.io/github/release/okkur/dailymile.svg)](https://github.com/okkur/dailymile/releases) [![license](https://img.shields.io/github/license/okkur/dailymile.svg)](LICENSE)
 
 **NOTE: This is a work-in-progress, we do not consider it production ready. Use at your own risk.**
 
-# Dailymile
 Generate one milestone per day within your Gitlab project.
 Use for your Gitlab based ToDo list or sprints.
 
