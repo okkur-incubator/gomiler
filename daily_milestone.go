@@ -70,44 +70,45 @@ func LoggerSetup(info io.Writer) {
 func getProjectID(baseURL string, Token string, Projectname string, Namespace string) (string, error) {
 	project := []gitLabAPI{}
 	urls := "https://" + baseURL + "/api/v4" + "/projects"
-	page := 1
+	//page := 1
+	//strPage := strconv.Itoa(page)
+	//s := []string{urls, "?page=", strPage}
+	//completeURL := strings.Join(s, "")
+	//fmt.Println(completeURL)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", urls, nil)
+	fmt.Println(urls)
+	if err != nil {
+		logger.Println(err)
 
+	}
+	req.Header.Add("Token", Token)
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Println(err)
+
+	}
+	respByte, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logger.Println("fail to read response data")
+
+	}
+	json.Unmarshal(respByte, &project)
+	defer resp.Body.Close()
+	fmt.Println(resp.Body)
+	fmt.Println(len(project))
 	for _, p := range project {
-
-		strPage := strconv.Itoa(page)
-		s := []string{urls, "?page=", strPage}
-		completeURL := strings.Join(s, "")
-		client := &http.Client{}
-		req, err := http.NewRequest("GET", completeURL, nil)
-		if err != nil {
-			logger.Println(err)
-			break
-		}
-		req.Header.Add("Token", Token)
-		resp, err := client.Do(req)
-		if err != nil {
-			logger.Println(err)
-			break
-		}
-		respByte, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			logger.Println("fail to read response data")
-			break
-		}
-		json.Unmarshal(respByte, project)
-		defer resp.Body.Close()
-		fmt.Println(resp.Body)
-		fmt.Println(project)
 		if p.Name == "message" {
 			fmt.Println(p.Name)
 		}
-		if p.Name == Projectname && p.NameSpace.Path == Namespace {
+		fmt.Println(p.Name)
+		fmt.Println(p.NameSpace.Path)
+		if p.Name == Projectname /*&& p.NameSpace.Path == Namespace*/ {
 			return strconv.Itoa(p.ID), nil
 		}
 		if p.Title == "" {
 			break
 		}
-		page++
 
 	}
 	return "", fmt.Errorf("project %s not found", Projectname)
@@ -120,29 +121,30 @@ func getMilestones(baseURL string, token string, projectID string) ([]string, er
 	urls := strings.Join(strurl, "")
 
 	page := 1
+	strPage := strconv.Itoa(page)
+	s := []string{urls, "/", strPage, "/milestones"}
+	url := strings.Join(s, "")
+	client := &http.Client{}
+	re := regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		logger.Println(err)
+
+	}
+	//req.Header.Add("PRIVATE-TOKEN", token)
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Println(err)
+
+	}
+	respByte, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logger.Println("fail to read response data")
+
+	}
 
 	for _, p := range project {
-		strPage := strconv.Itoa(page)
-		s := []string{urls, "/", strPage, "/milestones"}
-		url := strings.Join(s, "")
-		client := &http.Client{}
-		re := regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			logger.Println(err)
-			break
-		}
-		//req.Header.Add("PRIVATE-TOKEN", token)
-		resp, err := client.Do(req)
-		if err != nil {
-			logger.Println(err)
-			break
-		}
-		respByte, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			logger.Println("fail to read response data")
-			break
-		}
+
 		if p.State != "closed" && re.MatchString(p.Title) {
 
 			titleList := []string{"Title: ", p.Title, "due_date", p.DueDate}
@@ -183,6 +185,7 @@ func createMilestoneData(advance int) []string {
 func createMilestones(baseURL string, token string, projectID string, milestones []string) string {
 	strurl := []string{"https://", baseURL, "/projects/", projectID, "/milestones"}
 	url := strings.Join(strurl, ",")
+	fmt.Println(url)
 	client := &http.Client{}
 	for _, m := range milestones {
 		req, err := http.NewRequest("POST", url, nil)
@@ -211,7 +214,7 @@ func main() {
 	flag.StringVar(&Token, "Token", "lol", "Gitlab api key/token.")
 	flag.StringVar(&APIBase, "baseURL", "dev.seetheprogress.eu", "Gitlab api base url")
 	flag.StringVar(&Namespace, "Namespace", "okkur", "Namespace to use in Gitlab")
-	flag.StringVar(&Project, "ProjectName", "dailymile_test", "Project to use in Gitlab")
+	flag.StringVar(&Project, "ProjectName", "syna", "Project to use in Gitlab")
 	flag.IntVar(&Advance, "Advance", 30, "Define timeframe to generate milestones in advance.")
 	flag.Parse() //Command Line Parsing Ends
 
