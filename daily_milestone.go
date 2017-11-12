@@ -15,6 +15,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -115,7 +116,6 @@ func getMilestones(baseURL string, token string, projectID string) ([]string, er
 	list := []string{}
 	strurl := []string{"https://", baseURL, "/api/v4", "/projects/", projectID, "/milestones"}
 	urls := strings.Join(strurl, "")
-	fmt.Println(urls)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
@@ -136,9 +136,7 @@ func getMilestones(baseURL string, token string, projectID string) ([]string, er
 
 	json.Unmarshal(respByte, &project)
 	defer resp.Body.Close()
-	fmt.Println(len(project))
 	for _, p := range project {
-		fmt.Println(p.State)
 		if p.State != "closed" {
 
 			titleList := []string{"Title: ", p.Title, ", DueDate", p.DueDate}
@@ -146,22 +144,23 @@ func getMilestones(baseURL string, token string, projectID string) ([]string, er
 			list = append(list, y)
 		}
 	}
-	fmt.Println(list)
+
 	return list, nil
 }
 
 // CreateMilestoneData is used to check the due date using the time package of python
 func createMilestoneData(advance int) []string {
 	today := time.Now().Local()
+	date := today.AddDate(0, 0, advance)
 	list := []string{}
-	for i := 0; i < advance; i++ {
-		date := today.AddDate(0, 0, i)
-		dateiso := date.Format("2009-01-02")                            // To Format to ISOFormat and it converts to string so can be used in list directly
-		datelist := []string{"Title: ", "dateiso", "due_date", dateiso} // Was unable to get a map in a list so made this
+	/*for i := 0; i < advance; i++ {
+		date := today.AddDate(0, 0, i)                          // To Format to ISOFormat and it converts to string so can be used in list directly
+		datelist := []string{"Title: ", date, "due_date", date} // Was unable to get a map in a list so made this
 		y := strings.Join(datelist, ",")
 		list = append(list, y)
-
-	}
+	}*/
+	fmt.Println(date)
+	fmt.Println(list)
 	return list
 }
 
@@ -170,13 +169,13 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 	url := strings.Join(strurl, "")
 	client := &http.Client{}
 	for _, m := range milestones {
-		req, err := http.NewRequest("POST", url, nil)
+		mbyte := bytes.NewReader([]byte(m))
+		req, err := http.NewRequest("POST", url, mbyte)
 		if err != nil {
 			logger.Println(err)
 			break
 		}
-		req.Header.Add("", m)
-		//req.Header.Add("PRIVATE-TOKEN", token)
+		req.Header.Add("PRIVATE-TOKEN", token)
 		resp, err := client.Do(req)
 		if err != nil {
 			logger.Println(err)
@@ -184,7 +183,7 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 		}
 		defer resp.Body.Close()
 	}
-	return ("Milestones Created" + strings.Join(milestones, ""))
+	return ("Milestones Created: " + strings.Join(milestones, ""))
 }
 
 func main() {
