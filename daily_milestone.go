@@ -23,7 +23,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +30,20 @@ import (
 
 // Struct to be used for project
 // project ....
+// Struct to be used for milestone
+// milestoneApi .....
+type milestoneAPI struct {
+	ID          int        `json:"id"`
+	Iid         int        `json:"iid"`
+	ProjectID   int        `json:"project_id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	State       string     `json:"state"`
+	CreatedAt   *time.Time `json:"created_at"`
+	UpdatedAt   *time.Time `json:"updated_at"`
+	StartDate   string     `json:"start_date"`
+	DueDate     string     `json:"due_date"`
+}
 type gitLabAPI struct {
 	ID          int        `json:"id"`
 	Iid         int        `json:"iid"`
@@ -50,12 +63,6 @@ type gitLabAPI struct {
 		Kind     string `json:"kind"`
 		FullPath string `json:"full_path"`
 	} `json:"namespace"`
-}
-
-// Struct to be used for milestone
-// milestone .....
-
-type milestone struct {
 }
 
 // Initialization of logging variable
@@ -102,18 +109,15 @@ func getProjectID(baseURL string, Token string, Projectname string, Namespace st
 	return "", fmt.Errorf("project %s not found", Projectname)
 }
 
+// It is getting milestones data from the milestone API
 func getMilestones(baseURL string, token string, projectID string) ([]string, error) {
-	project := []gitLabAPI{}
+	project := []milestoneAPI{}
 	list := []string{}
-	strurl := []string{"https://", baseURL, "/projects/:", projectID, "/milestones"}
-
+	strurl := []string{"https://", baseURL, "/api/v4", "/projects/", projectID, "/milestones"}
 	urls := strings.Join(strurl, "")
-
-	s := []string{urls, "/", "/milestones"}
-	url := strings.Join(s, "")
+	fmt.Println(urls)
 	client := &http.Client{}
-	re := regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", urls, nil)
 	if err != nil {
 		logger.Println(err)
 
@@ -130,26 +134,19 @@ func getMilestones(baseURL string, token string, projectID string) ([]string, er
 
 	}
 
+	json.Unmarshal(respByte, &project)
+	defer resp.Body.Close()
+	fmt.Println(len(project))
 	for _, p := range project {
+		fmt.Println(p.State)
+		if p.State != "closed" {
 
-		if p.State != "closed" && re.MatchString(p.Title) {
-
-			titleList := []string{"Title: ", p.Title, "due_date", p.DueDate}
-			y := strings.Join(titleList, ",")
+			titleList := []string{"Title: ", p.Title, ", DueDate", p.DueDate}
+			y := strings.Join(titleList, " ")
 			list = append(list, y)
 		}
-		errjson := json.Unmarshal(respByte, &project)
-		if errjson != nil {
-			logger.Println("Error")
-			logger.Println(errjson)
-		}
-		defer resp.Body.Close()
-
-		if p.Name == "" {
-			break
-		}
-
 	}
+	fmt.Println(list)
 	return list, nil
 }
 
@@ -196,7 +193,7 @@ func main() {
 	var Advance int
 	APIBase = ""
 	// Command Line Parsing Starts
-	flag.StringVar(&Token, "Token", "3VtzJ7sGzsu4SziusfjN", "Gitlab api key/token.")
+	flag.StringVar(&Token, "Token", "bVYFTJaYtgAZesSofKbq", "Gitlab api key/token.")
 	flag.StringVar(&APIBase, "baseURL", "dev.seetheprogress.eu", "Gitlab api base url")
 	flag.StringVar(&Namespace, "Namespace", "okkur", "Namespace to use in Gitlab")
 	flag.StringVar(&Project, "ProjectName", "dailymile_test", "Project to use in Gitlab")
