@@ -44,7 +44,7 @@ type milestoneAPI struct {
 	DueDate     string     `json:"due_date"`
 }
 
-//Struct to get ID from main API
+// Struct to get ID from main API
 type gitLabAPI struct {
 	ID          int        `json:"id"`
 	Iid         int        `json:"iid"`
@@ -80,17 +80,17 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", baseURL, nil)
 	if err != nil {
-		logger.Println(err)
+		return "", err
 	}
 	req.Header.Add("PRIVATE-TOKEN", token)
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Println(err)
+		return "", err
 	}
 
 	respByte, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logger.Println("fail to read response data")
+		return "", err
 
 	}
 	json.Unmarshal(respByte, &projects)
@@ -109,7 +109,7 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	return "", fmt.Errorf("project %s not found", projectname)
 }
 
-// It is getting milestones data from the milestone API and returning list of closed milestones
+// It is getting milestones data from the milestone API and returning list of active milestones
 func getMilestones(baseURL string, token string, projectID string) ([]string, error) {
 	milestones := []milestoneAPI{}
 	list := []string{}
@@ -118,26 +118,25 @@ func getMilestones(baseURL string, token string, projectID string) ([]string, er
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		logger.Println(err)
+		return list, err
 	}
 	req.Header.Add("PRIVATE-TOKEN", token)
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Println(err)
+		return list, err
 
 	}
 	respByte, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logger.Println("fail to read response data")
+		return list, err
 	}
 
 	json.Unmarshal(respByte, &milestones)
 	defer resp.Body.Close()
 	for _, m := range milestones {
 		if m.State != "closed" {
-			titleTuple := []string{"Title: ", m.Title, ", DueDate", m.DueDate}
-			y := strings.Join(titleTuple, " ")
-			list = append(list, y)
+			simpleMilestone := []string{"Title: ", m.Title, ", DueDate", m.DueDate}
+			list = append(list, strings.Join(simpleMilestone, " "))
 		}
 	}
 	fmt.Println(list)
@@ -149,10 +148,9 @@ func createMilestoneData(advance int) []string {
 	today := time.Now().Local()
 	list := []string{}
 	for i := 0; i < advance; i++ {
-		date := today.AddDate(0, 0, i)                                                                      // To Format to ISOFormat and it converts to string so can be used in list directly
-		datelist := []string{"Title: ", date.Format("2006-01-02"), "  due_date", date.Format("2006-01-02")} // Was unable to get a map in a list so made this
-		y := strings.Join(datelist, ",")
-		list = append(list, y)
+		date := today.AddDate(0, 0, i).Format("2006-01-02")       // To Format to ISOFormat and it converts to string so can be used in list directly
+		datelist := []string{"Title: ", date, "  due_date", date} // Was unable to get a map in a list so made this
+		list = append(list, strings.Join(datelist, ","))
 	}
 
 	fmt.Println(list)
@@ -181,11 +179,11 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 
 func main() {
 	// Declaring variables for flags
-	var Token, baseURL, Namespace, Project string
+	var Token, BaseURL, Namespace, Project string
 	var Advance int
 	// Command Line Parsing Starts
 	flag.StringVar(&Token, "Token", "bVYFTJaYtgAZesSofKbq", "Gitlab api key/token.")
-	flag.StringVar(&baseURL, "baseURL", "dev.seetheprogress.eu", "Gitlab api base url")
+	flag.StringVar(&BaseURL, "baseURL", "dev.seetheprogress.eu", "Gitlab api base url")
 	flag.StringVar(&Namespace, "Namespace", "okkur", "Namespace to use in Gitlab")
 	flag.StringVar(&Project, "ProjectName", "dailymile_test", "Project to use in Gitlab")
 	flag.IntVar(&Advance, "Advance", 30, "Define timeframe to generate milestones in advance.")
@@ -194,7 +192,7 @@ func main() {
 	// Initializing logger
 	LoggerSetup(os.Stdout)
 	// Calling getProjectID
-	baseurl := "https://" + baseURL + "/api/v4" + "/projects/"
+	baseurl := "https://" + BaseURL + "/api/v4" + "/projects/"
 	projectID, err := getProjectID(baseurl, Token, Project, Namespace)
 	if err != nil {
 		logger.Println(err)
