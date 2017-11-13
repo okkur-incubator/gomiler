@@ -150,7 +150,7 @@ func createMilestoneData(advance int) []string {
 	list := []string{}
 	for i := 0; i < advance; i++ {
 		date := today.AddDate(0, 0, i)                                                                      // To Format to ISOFormat and it converts to string so can be used in list directly
-		datelist := []string{"Title: ", date.Format(time.RFC3339), "  due_date", date.Format(time.RFC3339)} // Was unable to get a map in a list so made this
+		datelist := []string{"Title: ", date.Format("2006-01-02"), "  due_date", date.Format("2006-01-02")} // Was unable to get a map in a list so made this
 		y := strings.Join(datelist, ",")
 		list = append(list, y)
 	}
