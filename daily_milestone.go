@@ -170,10 +170,9 @@ func createMilestoneData(advance int, milestoneTime string) []simpleMilestone {
 			year, week := today.ISOWeek()
 			milestoneYear := strconv.Itoa(year)
 			milestoneWeek := strconv.Itoa(week)
-			milestones := milestoneYear + "-w" + milestoneWeek
 			milestone := simpleMilestone{}
-			milestone.Title = milestones
-			milestone.DueDate = milestones
+			milestone.Title = milestoneYear + "-w" + milestoneWeek
+			milestone.DueDate = today.Format("2006-01-02")
 			list = append(list, milestone)
 		} else if milestoneTime == "monthly" {
 			date := today.AddDate(0, i, 0).Format("2006-01")
@@ -220,11 +219,11 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 
 func main() {
 	// Declaring variables for flags
-	var token, baseURL, namespace, project, milestoneTime string
+	var token, baseURL, namespace, project, timeInterval string
 	var advance int
 	// Command Line Parsing Starts
 	flag.StringVar(&token, "Token", "jGWPwqQUuf37b", "Gitlab api key/token.")
-	flag.StringVar(&milestoneTime, "MilestoneTime", "daily", "Set milestone to daily, weekly or monthly")
+	flag.StringVar(&timeInterval, "timeInterval", "Daily", "to set milestone to daily, weekly or monthly.")
 	flag.StringVar(&baseURL, "BaseURL", "dev.example.com", "Gitlab api base url")
 	flag.StringVar(&namespace, "Namespace", "someNamespace", "Namespace to use in Gitlab")
 	flag.StringVar(&project, "ProjectName", "someProject", "Project to use in Gitlab")
@@ -247,7 +246,7 @@ func main() {
 		logger.Println(err)
 	}
 
-	newMilestones := createMilestoneData(advance, strings.ToLower(milestoneTime))
+	newMilestones := createMilestoneData(advance, strings.ToLower(timeInterval))
 	for i, newPair := range newMilestones {
 		for _, oldPair := range oldMilestones {
 			if oldPair.Title == newPair.Title {
