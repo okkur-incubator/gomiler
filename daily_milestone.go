@@ -155,17 +155,17 @@ func getMilestones(baseURL string, token string, projectID string) ([]simpleMile
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func createMilestoneData(advance int, milestoneTime string) []simpleMilestone {
+func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 	today := time.Now().Local()
 	list := []simpleMilestone{}
 	for i := 0; i < advance; i++ {
-		if milestoneTime == "daily" {
+		if timeInterval == "daily" {
 			date := today.AddDate(0, 0, i).Format("2006-01-02")
 			milestone := simpleMilestone{}
 			milestone.Title = date
 			milestone.DueDate = date
 			list = append(list, milestone)
-		} else if milestoneTime == "weekly" {
+		} else if timeInterval == "weekly" {
 			today = today.AddDate(0, 0, 7)
 			year, week := today.ISOWeek()
 			milestoneYear := strconv.Itoa(year)
@@ -174,14 +174,14 @@ func createMilestoneData(advance int, milestoneTime string) []simpleMilestone {
 			milestone.Title = milestoneYear + "-w" + milestoneWeek
 			milestone.DueDate = today.Format("2006-01-02")
 			list = append(list, milestone)
-		} else if milestoneTime == "monthly" {
+		} else if timeInterval == "monthly" {
 			date := today.AddDate(0, i, 0).Format("2006-01")
 			milestone := simpleMilestone{}
 			milestone.Title = date
 			milestone.DueDate = today.Format("2006-01-02")
 			list = append(list, milestone)
 		} else {
-			logger.Println("Error: Not Correct MilestoneTime")
+			logger.Println("Error: Not Correct TimeInterval")
 			return list
 		}
 
@@ -223,7 +223,7 @@ func main() {
 	var advance int
 	// Command Line Parsing Starts
 	flag.StringVar(&token, "Token", "jGWPwqQUuf37b", "Gitlab api key/token.")
-	flag.StringVar(&timeInterval, "timeInterval", "Daily", "to set milestone to daily, weekly or monthly.")
+	flag.StringVar(&timeInterval, "TimeInterval", "daily", "to set milestone to daily, weekly or monthly.")
 	flag.StringVar(&baseURL, "BaseURL", "dev.example.com", "Gitlab api base url")
 	flag.StringVar(&namespace, "Namespace", "someNamespace", "Namespace to use in Gitlab")
 	flag.StringVar(&project, "ProjectName", "someProject", "Project to use in Gitlab")
