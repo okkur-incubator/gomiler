@@ -250,7 +250,7 @@ func main() {
 	for i, newPair := range newMilestones {
 		for _, oldPair := range oldMilestones {
 			if oldPair.Title == newPair.Title {
-				newMilestones = append(newMilestones[:i], newMilestones[(i):]...)
+				newMilestones = append(newMilestones[:i], newMilestones[(i+1):]...)
 			}
 		}
 	}
