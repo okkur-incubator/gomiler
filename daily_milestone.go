@@ -158,34 +158,57 @@ func getMilestones(baseURL string, token string, projectID string) ([]simpleMile
 func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 	today := time.Now().Local()
 	list := []simpleMilestone{}
-	for i := 0; i < advance; i++ {
-		if timeInterval == "daily" {
+
+	if timeInterval == "daily" {
+		for i := 0; i < advance; i++ {
 			date := today.AddDate(0, 0, i).Format("2006-01-02")
 			milestone := simpleMilestone{}
 			milestone.Title = date
 			milestone.DueDate = date
 			list = append(list, milestone)
-		} else if timeInterval == "weekly" {
-			today = today.AddDate(0, 0, 7)
-			year, week := today.ISOWeek()
-			milestoneYear := strconv.Itoa(year)
-			milestoneWeek := strconv.Itoa(week)
+		}
+	} else if timeInterval == "weekly" {
+		newDate := today
+		day := newDate.Weekday()
+		year, week := newDate.ISOWeek()
+		x := day - day // initializing x to zero in time.Time
+		for i := 0; i < advance; i++ {
+			for j := x; j < 7; j++ {
+				z := day - day + 1
+				if z+day > 6 {
+					day = 0
+					newDate = newDate.AddDate(0, 0, 1)
+					break
+
+				} else if day == 0 {
+					day = 0
+					break
+				} else {
+					day = day + z
+					newDate = newDate.AddDate(0, 0, 1)
+				}
+			}
+			newDate = newDate.AddDate(0, 0, 1)
+			day = newDate.Weekday()
+			year, week = newDate.ISOWeek()
 			milestone := simpleMilestone{}
-			milestone.Title = milestoneYear + "-w" + milestoneWeek
+			milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
 			milestone.DueDate = today.Format("2006-01-02")
 			list = append(list, milestone)
-		} else if timeInterval == "monthly" {
+		}
+	} else if timeInterval == "monthly" {
+		for i := 0; i < advance; i++ {
 			date := today.AddDate(0, i, 0).Format("2006-01")
 			milestone := simpleMilestone{}
 			milestone.Title = date
 			milestone.DueDate = today.Format("2006-01-02")
 			list = append(list, milestone)
-		} else {
-			logger.Println("Error: Not Correct TimeInterval")
-			return list
 		}
-
+	} else {
+		logger.Println("Error: Not Correct TimeInterval")
+		return list
 	}
+
 	return list
 }
 
@@ -222,8 +245,8 @@ func main() {
 	var token, baseURL, namespace, project, timeInterval string
 	var advance int
 	// Command Line Parsing Starts
-	flag.StringVar(&token, "Token", "jGWPwqQUuf37b", "Gitlab api key/token")
-	flag.StringVar(&timeInterval, "TimeInterval", "daily", "Milestone interval for daily, weekly or monthly")
+	flag.StringVar(&token, "Token", "jGWPwqQUuf37b", "Gitlab api key/token.")
+	flag.StringVar(&timeInterval, "TimeInterval", "daily", "to set milestone to daily, weekly or monthly.")
 	flag.StringVar(&baseURL, "BaseURL", "dev.example.com", "Gitlab api base url")
 	flag.StringVar(&namespace, "Namespace", "someNamespace", "Namespace to use in Gitlab")
 	flag.StringVar(&project, "ProjectName", "someProject", "Project to use in Gitlab")
