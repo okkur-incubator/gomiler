@@ -191,7 +191,8 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 	today := time.Now().Local()
 	list := []simpleMilestone{}
 
-	if timeInterval == "daily" {
+	switch {
+	case timeInterval == "daily":
 		for i := 0; i < advance; i++ {
 			date := today.AddDate(0, 0, i).Format("2006-01-02")
 			milestone := simpleMilestone{}
@@ -199,7 +200,7 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			milestone.DueDate = date
 			list = append(list, milestone)
 		}
-	} else if timeInterval == "weekly" {
+	case timeInterval == "weekly":
 		_, week := today.ISOWeek()
 		lastday := lastDayISOWeek(today.Year(), week, time.UTC)
 		fmt.Println(lastday)
@@ -219,7 +220,7 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 					day = 0
 					break
 				} else {
-					day = day + z
+					day += z
 					newDate = newDate.AddDate(0, 0, 1)
 				}
 			}
@@ -231,7 +232,8 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			milestone.DueDate = newDate.Format("2006-01-02")
 			list = append(list, milestone)
 		}
-	} else if timeInterval == "monthly" {
+
+	case timeInterval == "monthly":
 		for i := 0; i < advance; i++ {
 			date := today.AddDate(0, i, 0)
 			lastday := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
@@ -240,7 +242,7 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			milestone.DueDate = lastday.Format("2006-01-02")
 			list = append(list, milestone)
 		}
-	} else {
+	default:
 		logger.Println("Error: Not Correct TimeInterval")
 		return list
 	}
