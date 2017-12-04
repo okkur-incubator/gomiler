@@ -79,6 +79,38 @@ func LoggerSetup(info io.Writer) {
 	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
+// Function to get last day of the week
+func lastDayISOWeek(year int, week int, timezone *time.Location) time.Time {
+	t := time.Date(year, 0, 0, 0, 0, 0, 0, timezone)
+	yearISO, weekISO := t.ISOWeek()
+
+	// Loop til Monday
+	for t.Weekday() != time.Monday {
+		t = t.AddDate(0, 0, -1)
+		yearISO, weekISO = t.ISOWeek()
+	}
+
+	// Handle year edge
+	for yearISO < year {
+		t = t.AddDate(0, 0, 7)
+		yearISO, weekISO = t.ISOWeek()
+	}
+
+	for weekISO < week {
+		t = t.AddDate(0, 0, 7)
+		yearISO, weekISO = t.ISOWeek()
+	}
+
+	// use first ISO day aka Monday to compute last ISO day Sunday
+	return t.AddDate(0, 0, 6)
+}
+
+// Function to get last day of the month
+func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
+	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
+	return t
+}
+
 // Function to get project ID from the gitLabAPI
 func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
 	projects := []gitLabAPI{}
@@ -88,8 +120,8 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	if err != nil {
 		return "", err
 	}
-
 	req.Header.Add("PRIVATE-TOKEN", token)
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -168,6 +200,9 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			list = append(list, milestone)
 		}
 	} else if timeInterval == "weekly" {
+		_, week := today.ISOWeek()
+		lastday := lastDayISOWeek(today.Year(), week, time.UTC)
+		fmt.Println(lastday)
 		newDate := today
 		day := newDate.Weekday()
 		year, week := newDate.ISOWeek()
@@ -193,15 +228,16 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			year, week = newDate.ISOWeek()
 			milestone := simpleMilestone{}
 			milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-			milestone.DueDate = today.Format("2006-01-02")
+			milestone.DueDate = newDate.Format("2006-01-02")
 			list = append(list, milestone)
 		}
 	} else if timeInterval == "monthly" {
 		for i := 0; i < advance; i++ {
-			date := today.AddDate(0, i, 0).Format("2006-01")
+			date := today.AddDate(0, i, 0)
+			lastday := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
 			milestone := simpleMilestone{}
-			milestone.Title = date
-			milestone.DueDate = today.Format("2006-01-02")
+			milestone.Title = date.Format("2006-01")
+			milestone.DueDate = lastday.Format("2006-01-02")
 			list = append(list, milestone)
 		}
 	} else {
@@ -292,5 +328,5 @@ func main() {
 		logger.Println(err)
 	}
 
-	logger.Println("") // TODO: Add final logging message with milestones created
+	logger.Println(newMilestones) // TODO: Add final logging message with milestones created
 }
