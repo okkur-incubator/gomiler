@@ -79,32 +79,6 @@ func LoggerSetup(info io.Writer) {
 	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-// Function to get last day of the week
-func lastDayISOWeek(year int, week int, timezone *time.Location) time.Time {
-	t := time.Date(year, 0, 0, 0, 0, 0, 0, timezone)
-	yearISO, weekISO := t.ISOWeek()
-
-	// Loop til Monday
-	for t.Weekday() != time.Monday {
-		t = t.AddDate(0, 0, -1)
-		yearISO, weekISO = t.ISOWeek()
-	}
-
-	// Handle year edge
-	for yearISO < year {
-		t = t.AddDate(0, 0, 7)
-		yearISO, weekISO = t.ISOWeek()
-	}
-
-	for weekISO < week {
-		t = t.AddDate(0, 0, 7)
-		yearISO, weekISO = t.ISOWeek()
-	}
-
-	// use first ISO day aka Monday to compute last ISO day Sunday
-	return t.AddDate(0, 0, 6)
-}
-
 // Function to get last day of the month
 func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
 	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
@@ -201,35 +175,17 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			list = append(list, milestone)
 		}
 	case timeInterval == "weekly":
-		_, week := today.ISOWeek()
-		lastday := lastDayISOWeek(today.Year(), week, time.UTC)
-		fmt.Println(lastday)
-		newDate := today
-		day := newDate.Weekday()
-		year, week := newDate.ISOWeek()
-		x := day - day // initializing x to zero in time.Time
-		for i := 0; i < advance; i++ {
-			for j := x; j < 7; j++ {
-				z := day - day + 1
-				if z+day > 6 {
-					day = 0
-					newDate = newDate.AddDate(0, 0, 1)
-					break
+		lastday := today
+		for lastday.Weekday() != time.Monday {
+			lastday = lastday.AddDate(0, 0, -1)
+		}
 
-				} else if day == 0 {
-					day = 0
-					break
-				} else {
-					day += z
-					newDate = newDate.AddDate(0, 0, 1)
-				}
-			}
-			newDate = newDate.AddDate(0, 0, 1)
-			day = newDate.Weekday()
-			year, week = newDate.ISOWeek()
+		for i := 0; i < advance; i++ {
+			lastday = lastday.AddDate(0, 0, 7)
+			year, week := lastday.ISOWeek()
 			milestone := simpleMilestone{}
 			milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-			milestone.DueDate = newDate.Format("2006-01-02")
+			milestone.DueDate = lastday.Format("2006-01-02")
 			list = append(list, milestone)
 		}
 
