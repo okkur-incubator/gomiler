@@ -84,6 +84,19 @@ func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
 	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
 	return t
 }
+func lastDayWeek(lastDay time.Time) (int, int, time.Time) {
+	if lastDay.Weekday() != time.Monday {
+		for lastDay.Weekday() != time.Monday {
+			lastDay = lastDay.AddDate(0, 0, -1)
+		}
+		year, week := lastDay.ISOWeek()
+		return year, week, lastDay
+	} else {
+		lastDay = lastDay.AddDate(0, 0, 7)
+		year, week := lastDay.ISOWeek()
+		return year, week, lastDay
+	}
+}
 
 // Function to get project ID from the gitLabAPI
 func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
@@ -175,17 +188,14 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			list = append(list, milestone)
 		}
 	case timeInterval == "weekly":
-		lastday := today
-		for lastday.Weekday() != time.Monday {
-			lastday = lastday.AddDate(0, 0, -1)
-		}
+		year, week, lastDay := lastDayWeek(today)
 
 		for i := 0; i < advance; i++ {
-			lastday = lastday.AddDate(0, 0, 7)
-			year, week := lastday.ISOWeek()
+
 			milestone := simpleMilestone{}
 			milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-			milestone.DueDate = lastday.Format("2006-01-02")
+			milestone.DueDate = lastDay.Format("2006-01-02")
+			year, week, lastDay = lastDayWeek(lastDay)
 			list = append(list, milestone)
 		}
 
