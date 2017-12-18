@@ -138,7 +138,7 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 func getMilestones(baseURL string, token string, projectID string) ([]simpleMilestone, error) {
 	milestones := []milestoneAPI{}
 	list := []simpleMilestone{}
-	strURL := []string{baseURL, projectID, "/milestones"}
+	strURL := []string{baseURL, projectID, "/milestones?state=active&per_page=100"}
 	URL := strings.Join(strURL, "")
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", URL, nil)
@@ -159,14 +159,6 @@ func getMilestones(baseURL string, token string, projectID string) ([]simpleMile
 
 	json.Unmarshal(respByte, &milestones)
 	defer resp.Body.Close()
-	for _, m := range milestones {
-		if m.State != "closed" {
-			milestone := simpleMilestone{}
-			milestone.Title = m.Title
-			milestone.DueDate = m.DueDate
-			list = append(list, milestone)
-		}
-	}
 
 	return list, nil
 }
@@ -185,13 +177,13 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			milestone.DueDate = date
 			list = append(list, milestone)
 		}
+
 	case timeInterval == "weekly":
 		lastDay := lastDayWeek(today)
 		milestone := simpleMilestone{}
 		year, week := lastDay.ISOWeek()
 		milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
 		milestone.DueDate = lastDay.Format("2006-01-02")
-		list = append(list, milestone)
 
 		for i := 0; i < advance; i++ {
 			year, week := lastDay.ISOWeek()
@@ -211,6 +203,7 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 			milestone.DueDate = lastday.Format("2006-01-02")
 			list = append(list, milestone)
 		}
+
 	default:
 		logger.Println("Error: Not Correct TimeInterval")
 		return list
