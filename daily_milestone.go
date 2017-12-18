@@ -89,7 +89,7 @@ func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
 func lastDayWeek(lastDay time.Time) time.Time {
 	if lastDay.Weekday() != time.Sunday {
 		for lastDay.Weekday() != time.Sunday {
-			lastDay = lastDay.AddDate(0, 0, -1)
+			lastDay = lastDay.AddDate(0, 0, +1)
 		}
 		return lastDay
 	}
@@ -159,6 +159,12 @@ func getMilestones(baseURL string, token string, projectID string) ([]simpleMile
 
 	json.Unmarshal(respByte, &milestones)
 	defer resp.Body.Close()
+	for _, m := range milestones {
+		milestone := simpleMilestone{}
+		milestone.Title = m.Title
+		milestone.DueDate = m.DueDate
+		list = append(list, milestone)
+	}
 
 	return list, nil
 }
@@ -187,11 +193,11 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 
 		for i := 0; i < advance; i++ {
 			year, week := lastDay.ISOWeek()
-			lastDay = lastDay.AddDate(0, 0, 7)
 			milestone := simpleMilestone{}
 			milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
 			milestone.DueDate = lastDay.Format("2006-01-02")
 			list = append(list, milestone)
+			lastDay = lastDay.AddDate(0, 0, 7)
 		}
 
 	case timeInterval == "monthly":
