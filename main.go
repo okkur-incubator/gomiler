@@ -66,11 +66,6 @@ type gitLabAPI struct {
 	} `json:"namespace"`
 }
 
-type simpleMilestone struct {
-	Title   string
-	DueDate string
-}
-
 // Initialization of logging variable
 var logger *log.Logger
 
@@ -135,68 +130,58 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 }
 
 // Get and return currently active milestones
-func getMilestones(baseURL string, token string, projectID string) ([]simpleMilestone, error) {
+func getMilestones(baseURL string, token string, projectID string) (map[string]string, error) {
 	milestones := []milestoneAPI{}
-	list := []simpleMilestone{}
+	m := map[string]string{}
 	strURL := []string{baseURL, projectID, "/milestones?state=active&per_page=100"}
 	URL := strings.Join(strURL, "")
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
-		return list, err
+		return m, err
 	}
 
 	req.Header.Add("PRIVATE-TOKEN", token)
 	resp, err := client.Do(req)
 	if err != nil {
-		return list, err
+		return m, err
 	}
 
 	respByte, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return list, err
+		return m, err
 	}
 
 	json.Unmarshal(respByte, &milestones)
 	defer resp.Body.Close()
-	for _, m := range milestones {
-		milestone := simpleMilestone{}
-		milestone.Title = m.Title
-		milestone.DueDate = m.DueDate
-		list = append(list, milestone)
+	m = map[string]string{}
+
+	for _, milestone := range milestones {
+		m[milestone.Title] = milestone.DueDate
 	}
 
-	return list, nil
+	return m, nil
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
+func createMilestoneData(advance int, timeInterval string) map[string]string {
 	today := time.Now().Local()
-	list := []simpleMilestone{}
+	m := map[string]string{}
 
 	switch {
 	case timeInterval == "daily":
 		for i := 0; i < advance; i++ {
 			date := today.AddDate(0, 0, i).Format("2006-01-02")
-			milestone := simpleMilestone{}
-			milestone.Title = date
-			milestone.DueDate = date
-			list = append(list, milestone)
+			m[date] = date
 		}
 
 	case timeInterval == "weekly":
-		lastDay := lastDayWeek(today)
-		milestone := simpleMilestone{}
-		year, week := lastDay.ISOWeek()
-		milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-		milestone.DueDate = lastDay.Format("2006-01-02")
-
 		for i := 0; i < advance; i++ {
+			lastDay := lastDayWeek(today)
 			year, week := lastDay.ISOWeek()
-			milestone := simpleMilestone{}
-			milestone.Title = strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-			milestone.DueDate = lastDay.Format("2006-01-02")
-			list = append(list, milestone)
+			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
+			dueDate := lastDay.Format("2006-01-02")
+			m[title] = dueDate
 			lastDay = lastDay.AddDate(0, 0, 7)
 		}
 
@@ -204,31 +189,29 @@ func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
 		for i := 0; i < advance; i++ {
 			date := today.AddDate(0, i, 0)
 			lastday := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
-			milestone := simpleMilestone{}
-			milestone.Title = date.Format("2006-01")
-			milestone.DueDate = lastday.Format("2006-01-02")
-			list = append(list, milestone)
+			title := date.Format("2006-01")
+			dueDate := lastday.Format("2006-01-02")
+			m[title] = dueDate
 		}
 
 	default:
 		logger.Println("Error: Not Correct TimeInterval")
-		return list
+		return m
 	}
 
-	return list
+	return m
 }
 
-func createMilestones(baseURL string, token string, projectID string, milestones []simpleMilestone) error {
+func createMilestones(baseURL string, token string, projectID string, milestones map[string]string) error {
 	strURL := []string{baseURL, projectID, "/milestones"}
 	URL := strings.Join(strURL, "")
 	client := &http.Client{}
 
-	for _, m := range milestones {
-		v := url.Values{}
-		v.Set("title", m.Title)
-		v.Set("due_date", m.DueDate)
-		v.Encode()
-		mbyte := bytes.NewReader([]byte(v.Encode()))
+	for k, v := range milestones {
+		urlV := url.Values{}
+		urlV.Set("title", k)
+		urlV.Set("due_date", v)
+		mbyte := bytes.NewReader([]byte(urlV.Encode()))
 		req, err := http.NewRequest("POST", URL, mbyte)
 		if err != nil {
 			return err
@@ -239,6 +222,7 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 		if err != nil {
 			return err
 		}
+		logger.Println(resp)
 
 		defer resp.Body.Close()
 	}
@@ -275,11 +259,18 @@ func main() {
 		logger.Println(err)
 	}
 
-	newMilestones := createMilestoneData(advance, strings.ToLower(timeInterval))
-	for i, newPair := range newMilestones {
-		for _, oldPair := range oldMilestones {
-			if oldPair.Title == newPair.Title {
-				newMilestones = append(newMilestones[:i], newMilestones[(i+1):]...)
+	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
+
+	// copy map
+	newMilestones := map[string]string{}
+	for k, v := range milestoneData {
+		newMilestones[k] = v
+	}
+
+	for k, _ := range milestoneData {
+		for ok, _ := range oldMilestones {
+			if k == ok {
+				delete(newMilestones, k)
 			}
 		}
 	}
