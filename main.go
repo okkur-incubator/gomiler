@@ -222,7 +222,6 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 		if err != nil {
 			return err
 		}
-		logger.Println(resp)
 
 		defer resp.Body.Close()
 	}
