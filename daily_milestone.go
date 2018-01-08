@@ -255,6 +255,15 @@ func main() {
 		}
 	}
 
+	if len(newMilestones) == 0 {
+		logger.Println("No milestone creation needed")
+	} else {
+		logger.Println("New milestones:")
+		for _, milestone := range newMilestones {
+			logger.Printf("Title: %s - Due Date: %s", milestone.Title, milestone.DueDate)
+		}
+	}
+
 	err = createMilestones(baseURL, token, projectID, newMilestones)
 	if err != nil {
 		logger.Println(err)
