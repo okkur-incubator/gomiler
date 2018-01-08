@@ -66,17 +66,29 @@ type gitLabAPI struct {
 	} `json:"namespace"`
 }
 
-type simpleMilestone struct {
-	Title   string
-	DueDate string
-}
-
 // Initialization of logging variable
 var logger *log.Logger
 
 // LoggerSetup Initialization
 func LoggerSetup(info io.Writer) {
 	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+// Function to get last day of the month
+func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
+	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
+	return t
+}
+
+// last day of week
+func lastDayWeek(lastDay time.Time) time.Time {
+	if lastDay.Weekday() != time.Sunday {
+		for lastDay.Weekday() != time.Sunday {
+			lastDay = lastDay.AddDate(0, 0, +1)
+		}
+		return lastDay
+	}
+	return lastDay
 }
 
 // Function to get project ID from the gitLabAPI
@@ -88,8 +100,8 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	if err != nil {
 		return "", err
 	}
-
 	req.Header.Add("PRIVATE-TOKEN", token)
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -118,88 +130,88 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 }
 
 // Get and return currently active milestones
-func getMilestones(baseURL string, token string, projectID string) ([]simpleMilestone, error) {
+func getMilestones(baseURL string, token string, projectID string) (map[string]string, error) {
 	milestones := []milestoneAPI{}
-	list := []simpleMilestone{}
-	strURL := []string{baseURL, projectID, "/milestones"}
+	m := map[string]string{}
+	strURL := []string{baseURL, projectID, "/milestones?state=active&per_page=100"}
 	URL := strings.Join(strURL, "")
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
-		return list, err
+		return m, err
 	}
 
 	req.Header.Add("PRIVATE-TOKEN", token)
 	resp, err := client.Do(req)
 	if err != nil {
-		return list, err
+		return m, err
 	}
 
 	respByte, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return list, err
+		return m, err
 	}
 
 	json.Unmarshal(respByte, &milestones)
 	defer resp.Body.Close()
-	for _, m := range milestones {
-		if m.State != "closed" {
-			milestone := simpleMilestone{}
-			milestone.Title = m.Title
-			milestone.DueDate = m.DueDate
-			list = append(list, milestone)
-		}
+	m = map[string]string{}
+
+	for _, milestone := range milestones {
+		m[milestone.Title] = milestone.DueDate
 	}
 
-	return list, nil
+	return m, nil
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func createMilestoneData(advance int, timeInterval string) []simpleMilestone {
+func createMilestoneData(advance int, timeInterval string) map[string]string {
 	today := time.Now().Local()
-	list := []simpleMilestone{}
-	for i := 0; i < advance; i++ {
-		if timeInterval == "daily" {
+	m := map[string]string{}
+
+	switch {
+	case timeInterval == "daily":
+		for i := 0; i < advance; i++ {
 			date := today.AddDate(0, 0, i).Format("2006-01-02")
-			milestone := simpleMilestone{}
-			milestone.Title = date
-			milestone.DueDate = date
-			list = append(list, milestone)
-		} else if timeInterval == "weekly" {
-			today = today.AddDate(0, 0, 7)
-			year, week := today.ISOWeek()
-			milestoneYear := strconv.Itoa(year)
-			milestoneWeek := strconv.Itoa(week)
-			milestone := simpleMilestone{}
-			milestone.Title = milestoneYear + "-w" + milestoneWeek
-			milestone.DueDate = today.Format("2006-01-02")
-			list = append(list, milestone)
-		} else if timeInterval == "monthly" {
-			date := today.AddDate(0, i, 0).Format("2006-01")
-			milestone := simpleMilestone{}
-			milestone.Title = date
-			milestone.DueDate = today.Format("2006-01-02")
-			list = append(list, milestone)
-		} else {
-			logger.Println("Error: Not Correct TimeInterval")
-			return list
+			m[date] = date
 		}
 
+	case timeInterval == "weekly":
+		for i := 0; i < advance; i++ {
+			lastDay := lastDayWeek(today)
+			year, week := lastDay.ISOWeek()
+			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
+			dueDate := lastDay.Format("2006-01-02")
+			m[title] = dueDate
+			lastDay = lastDay.AddDate(0, 0, 7)
+		}
+
+	case timeInterval == "monthly":
+		for i := 0; i < advance; i++ {
+			date := today.AddDate(0, i, 0)
+			lastday := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
+			title := date.Format("2006-01")
+			dueDate := lastday.Format("2006-01-02")
+			m[title] = dueDate
+		}
+
+	default:
+		logger.Println("Error: Not Correct TimeInterval")
+		return m
 	}
-	return list
+
+	return m
 }
 
-func createMilestones(baseURL string, token string, projectID string, milestones []simpleMilestone) error {
+func createMilestones(baseURL string, token string, projectID string, milestones map[string]string) error {
 	strURL := []string{baseURL, projectID, "/milestones"}
 	URL := strings.Join(strURL, "")
 	client := &http.Client{}
 
-	for _, m := range milestones {
-		v := url.Values{}
-		v.Set("title", m.Title)
-		v.Set("due_date", m.DueDate)
-		v.Encode()
-		mbyte := bytes.NewReader([]byte(v.Encode()))
+	for k, v := range milestones {
+		urlV := url.Values{}
+		urlV.Set("title", k)
+		urlV.Set("due_date", v)
+		mbyte := bytes.NewReader([]byte(urlV.Encode()))
 		req, err := http.NewRequest("POST", URL, mbyte)
 		if err != nil {
 			return err
@@ -223,7 +235,7 @@ func main() {
 	var advance int
 	// Command Line Parsing Starts
 	flag.StringVar(&token, "Token", "jGWPwqQUuf37b", "Gitlab api key/token")
-	flag.StringVar(&timeInterval, "TimeInterval", "daily", "Milestone interval for daily, weekly or monthly")
+	flag.StringVar(&timeInterval, "TimeInterval", "daily", "Set milestone to daily, weekly or monthly")
 	flag.StringVar(&baseURL, "BaseURL", "dev.example.com", "Gitlab api base url")
 	flag.StringVar(&namespace, "Namespace", "someNamespace", "Namespace to use in Gitlab")
 	flag.StringVar(&project, "ProjectName", "someProject", "Project to use in Gitlab")
@@ -246,11 +258,18 @@ func main() {
 		logger.Println(err)
 	}
 
-	newMilestones := createMilestoneData(advance, strings.ToLower(timeInterval))
-	for i, newPair := range newMilestones {
-		for _, oldPair := range oldMilestones {
-			if oldPair.Title == newPair.Title {
-				newMilestones = append(newMilestones[:i], newMilestones[(i+1):]...)
+	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
+
+	// copy map
+	newMilestones := map[string]string{}
+	for k, v := range milestoneData {
+		newMilestones[k] = v
+	}
+
+	for k, _ := range milestoneData {
+		for ok, _ := range oldMilestones {
+			if k == ok {
+				delete(newMilestones, k)
 			}
 		}
 	}
@@ -259,15 +278,12 @@ func main() {
 		logger.Println("No milestone creation needed")
 	} else {
 		logger.Println("New milestones:")
-		for _, milestone := range newMilestones {
-			logger.Printf("Title: %s - Due Date: %s", milestone.Title, milestone.DueDate)
+		for title, dueDate := range newMilestones {
+			logger.Printf("Title: %s - Due Date: %s", title, dueDate)
 		}
-	}
-
-	err = createMilestones(baseURL, token, projectID, newMilestones)
-	if err != nil {
-		logger.Println(err)
-	}
-
-	logger.Println("") // TODO: Add final logging message with milestones created
+		err = createMilestones(baseURL, token, projectID, newMilestones)
+		if err != nil {
+			logger.Println(err)
+		}
+	}	
 }
