@@ -278,15 +278,12 @@ func main() {
 		logger.Println("No milestone creation needed")
 	} else {
 		logger.Println("New milestones:")
-		for _, milestone := range newMilestones {
-			logger.Printf("Title: %s - Due Date: %s", milestone.Title, milestone.DueDate)
+		for title, dueDate := range newMilestones {
+			logger.Printf("Title: %s - Due Date: %s", title, dueDate)
 		}
-	}
-
-	err = createMilestones(baseURL, token, projectID, newMilestones)
-	if err != nil {
-		logger.Println(err)
-	}
-
-	logger.Println(newMilestones) // TODO: Add final logging message with milestones created
+		err = createMilestones(baseURL, token, projectID, newMilestones)
+		if err != nil {
+			logger.Println(err)
+		}
+	}	
 }
