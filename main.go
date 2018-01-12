@@ -134,7 +134,7 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 // Get and return currently active milestones
 func getMilestones(baseURL string, token string, projectID string) (map[string]string, error) {
 	milestones := []milestoneAPI{}
-	
+
 	strURL := []string{baseURL, projectID, "/milestones?state=active&per_page=100"}
 	URL := strings.Join(strURL, "")
 
@@ -163,7 +163,7 @@ func getMilestones(baseURL string, token string, projectID string) (map[string]s
 	return m, nil
 }
 
-func callServer (URL string, token string, milestones []milestoneAPI) (map[string]string, string, error) {
+func callServer(URL string, token string, milestones []milestoneAPI) (map[string]string, string, error) {
 	m := map[string]string{}
 	client := &http.Client{}
 	var linkHeader string
@@ -277,7 +277,7 @@ func main() {
 	baseURL = "https://" + baseURL + "/api/v4" + "/projects/"
 	projectID, err := getProjectID(baseURL, token, project, namespace)
 	if err != nil {
-		logger.Println(err)
+		logger.Fatal(err)
 		// TODO: check for authentication error (currently it only says project not found)
 	}
 
@@ -313,5 +313,5 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-	}	
+	}
 }
