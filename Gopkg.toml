@@ -24,3 +24,7 @@
 [[constraint]]
   name = "github.com/peterhellberg/link"
   version = "1.0.0"
+
+[[constraint]]
+  branch = "v1"
+  name = "gopkg.in/jarcoal/httpmock.v1"
