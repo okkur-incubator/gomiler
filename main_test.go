@@ -36,7 +36,7 @@ func TestLastDayWeek(t *testing.T) {
 	date := time.Now().Local()
 	lastDay := lastDayWeek(date)
 	if lastDay.Weekday() != time.Sunday {
-		t.Error("Expected %s, got %s", time.Sunday, lastDay.Weekday())
+		t.Errorf("Expected %s, got %s", time.Sunday, lastDay.Weekday())
 	}
 }
 
@@ -93,22 +93,3 @@ func TestCreateMilestoneDataMonthly(t *testing.T) {
 		t.Errorf("Expected %s, got %s", expected, milestones[currentMonth])
 	}
 }
-
-// func TestGetMilestones(t *testing.T) {
-// 	httpmock.Activate()
-// 	defer httpmock.DeactivateAndReset()
-// 	mockURL := "https://gitlab.com/api/v4/projects/"
-// 	milestones := [1]milestoneAPI{}
-// 	milestones[0].Title = "test"
-// 	milestones[0].DueDate = "test"
-
-// 	jsonStruct, err := json.Marshal(milestones)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-
-// 	httpmock.RegisterResponder("GET", "https://gitlab.com/api/v4/projects/test/milestones?state=active&per_page=100",
-// 		httpmock.NewStringResponder(200, string(jsonStruct)))
-
-// 	res, err := getMilestones(mockURL, "1123", "test")
-// }
