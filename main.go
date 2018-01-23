@@ -149,6 +149,24 @@ func getActiveMilestones(baseURL string, token string, projectID string) (map[st
 	return milestones, nil
 }
 
+// Get and return inactive milestones
+func getInactiveMilestones(baseURL string, token string, projectID string) (map[string]int, error) {
+	strURL := []string{baseURL, projectID, "/milestones?state=closed&per_page=100"}
+	URL := strings.Join(strURL, "")
+	milestones := map[string]int{}
+
+	m, err := gitlabGet(URL, token)
+	if err != nil {
+		return milestones, err
+	}
+
+	for _, milestone := range m {
+		milestones[milestone.Title] = milestone.ID
+	}
+
+	return milestones, nil
+}
+
 func gitlabGet(URL string, token string) ([]milestoneAPI, error) {
 	m := []milestoneAPI{}
 	client := &http.Client{}
