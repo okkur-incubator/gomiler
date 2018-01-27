@@ -140,7 +140,7 @@ func getActiveMilestones(baseURL string, token string, projectID string) ([]mile
 
 // Get and return inactive milestones
 func getInactiveMilestones(baseURL string, token string, projectID string) ([]milestoneAPI, error) {
-	state := "state=inactive"
+	state := "state=closed"
     return getMilestones(baseURL, token, projectID, state)
 }
 
