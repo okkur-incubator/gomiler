@@ -36,6 +36,7 @@ import (
 type milestone struct {
 	DueDate string
 	ID      string
+	Title string
 }
 
 // Struct to be used for milestone
@@ -134,25 +135,24 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 
 // Get and return currently active milestones
 func getActiveMilestones(baseURL string, token string, projectID string) ([]milestoneAPI, error) {
-	state := "state=active"
+	state := "active"
 	return getMilestones(baseURL, token, projectID, state)
 }
 
 // Get and return inactive milestones
 func getInactiveMilestones(baseURL string, token string, projectID string) ([]milestoneAPI, error) {
-	state := "state=closed"
+	state := "closed"
     return getMilestones(baseURL, token, projectID, state)
 }
 
 func getMilestones(baseURL string, token string, projectID string, state string) ([]milestoneAPI, error) {
-	strURL := []string{baseURL, projectID, "/milestones?", state}
-	URL := strings.Join(strURL, "")
 	m := []milestoneAPI{}
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", URL, nil)
-	if err != nil {
-		return m, err
-	}
+	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
+	URL := strings.Join(strURL, "")
+	params := url.Values{}
+	params.Add("state", state)
+	req, _ := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
 	req.Header.Add("PRIVATE-TOKEN", token)
 	resp, err := client.Do(req)
 	if err != nil {
