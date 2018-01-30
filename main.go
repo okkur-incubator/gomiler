@@ -213,15 +213,14 @@ func createMilestoneData(advance int, timeInterval string) map[string]string {
 }
 
 func createMilestones(baseURL string, token string, projectID string, milestones map[string]string) error {
-	strURL := []string{baseURL, projectID, "/milestones"}
-	URL := strings.Join(strURL, "")
 	client := &http.Client{}
+	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
+	URL := strings.Join(strURL, "")
+	params := url.Values{}
 	for k, v := range milestones {
-		urlV := url.Values{}
-		urlV.Set("title", k)
-		urlV.Set("due_date", v)
-		mbyte := bytes.NewReader([]byte(urlV.Encode()))
-		req, err := http.NewRequest("POST", URL, mbyte)
+		params.Set("title", k)
+		params.Set("dueDate", v)
+		req, err := http.NewRequest("POST", URL, bytes.NewReader([]byte(params.Encode())))
 		if err != nil {
 			return err
 		}
@@ -244,7 +243,7 @@ func createMilestoneMap(milestoneAPI []milestoneAPI) (map[string]milestone) {
 		m.ID = strconv.Itoa(v.ID)
 		m.Title = v.Title
 	}
-	
+
 	return milestones
 }
 
