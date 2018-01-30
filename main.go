@@ -163,34 +163,16 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 		return m, err
 	}
 	json.Unmarshal(respByte, &m)
-	defer resp.Body.Close()
 	var linkHeader string
 	linkHeader = resp.Header.Get("Link")
 	parsedHeader := link.Parse(linkHeader)
 	for _, elem := range parsedHeader {
 		if elem.Rel == "next" {
-			req, err := http.NewRequest("GET", URL, nil)
-			if err != nil {
-				return m, err
-			}
-			req.Header.Add("PRIVATE-TOKEN", token)
-			resp, err := client.Do(req)
-			if err != nil {
-				return m, err
-			}
-			_, err = ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return m, err
-			}
-			respByte, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return m, err
-			}
 			json.Unmarshal(respByte, &m)
-			defer resp.Body.Close()
 			linkHeader = resp.Header.Get("Link")
 		}
 	}
+	defer resp.Body.Close()
 
 	return m, nil
 }
@@ -254,13 +236,16 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 	return nil
 }
 
-func createMilestoneMap(milestones []milestoneAPI) (map[string]milestone) {
+func createMilestoneMap(milestoneAPI []milestoneAPI) (map[string]milestone) {
 	var m milestone
-	activeMilestones := map[string]milestone{}
-	m.DueDate = "2018-01-01"
-	m.ID = "24"
-	activeMilestones["2018-01-01"] = m
-	return activeMilestones
+	milestones := map[string]milestone{}
+	for _, v := range milestoneAPI {
+		m.DueDate = v.DueDate
+		m.ID = strconv.Itoa(v.ID)
+		m.Title = v.Title
+	}
+	
+	return milestones
 }
 
 func main() {
