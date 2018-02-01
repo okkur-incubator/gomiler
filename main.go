@@ -36,7 +36,7 @@ import (
 type milestone struct {
 	DueDate string
 	ID      string
-	Title string
+	Title   string
 }
 
 // Struct to be used for milestone
@@ -104,7 +104,9 @@ func lastDayWeek(lastDay time.Time) time.Time {
 func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
 	projects := []gitLabAPI{}
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", baseURL, nil)
+	strURL := []string{baseURL, "/projects/"}
+	URL := strings.Join(strURL, "")
+	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +144,7 @@ func getActiveMilestones(baseURL string, token string, projectID string) ([]mile
 // Get and return inactive milestones
 func getInactiveMilestones(baseURL string, token string, projectID string) ([]milestoneAPI, error) {
 	state := "closed"
-    return getMilestones(baseURL, token, projectID, state)
+	return getMilestones(baseURL, token, projectID, state)
 }
 
 func getMilestones(baseURL string, token string, projectID string, state string) ([]milestoneAPI, error) {
@@ -152,30 +154,44 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	params.Add("state", state)
-	req, _ := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
-	req.Header.Add("PRIVATE-TOKEN", token)
-	resp, err := client.Do(req)
-	if err != nil {
-		return m, err
-	}
-	respByte, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return m, err
-	}
-	json.Unmarshal(respByte, &m)
-	var linkHeader string
-	linkHeader = resp.Header.Get("Link")
-	parsedHeader := link.Parse(linkHeader)
-	for _, elem := range parsedHeader {
-		if elem.Rel == "next" {
-			json.Unmarshal(respByte, &m)
-			linkHeader = resp.Header.Get("Link")
+	for {
+		next := false
+		req, err := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
+		if err != nil {
+			return m, err
 		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return m, err
+		}
+		_, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return m, err
+		}
+		respByte, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return m, err
+		}
+		json.Unmarshal(respByte, &m)
+		defer resp.Body.Close()
+		linkHeader := resp.Header.Get("Link")
+		parsedHeader := link.Parse(linkHeader)
+		for _, elem := range parsedHeader {
+			if elem.Rel == "next" {
+				URL = elem.URI
+				next = true
+				break
+				}
+			}
+			if next == true {
+				continue
+			}
+			break
+		}
+		
+		return m, nil
 	}
-	defer resp.Body.Close()
-
-	return m, nil
-}
 
 // CreateMilestoneData creates new milestones with title and due date
 func createMilestoneData(advance int, timeInterval string) map[string]string {
@@ -235,13 +251,14 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 	return nil
 }
 
-func createMilestoneMap(milestoneAPI []milestoneAPI) (map[string]milestone) {
-	var m milestone
+func createMilestoneMap(milestoneAPI []milestoneAPI) map[string]milestone {
 	milestones := map[string]milestone{}
 	for _, v := range milestoneAPI {
+		var m milestone
 		m.DueDate = v.DueDate
 		m.ID = strconv.Itoa(v.ID)
 		m.Title = v.Title
+		milestones[v.DueDate] = m
 	}
 
 	return milestones
@@ -264,7 +281,7 @@ func main() {
 	LoggerSetup(os.Stdout)
 
 	// Calling getProjectID
-	baseURL = "https://" + baseURL + "/api/v4" + "/projects/"
+	baseURL = "https://" + baseURL + "/api/v4"
 	projectID, err := getProjectID(baseURL, token, project, namespace)
 	if err != nil {
 		logger.Fatal(err)

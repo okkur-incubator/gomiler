@@ -43,7 +43,7 @@ func TestLastDayWeek(t *testing.T) {
 func TestGetProjectID(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	mockURL := "https://" + "gitlab.com" + "/api/v4" + "/projects/"
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
 	projects := [1]gitLabAPI{}
 
 	projects[0].Name = "test"
