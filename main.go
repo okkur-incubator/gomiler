@@ -154,8 +154,8 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	params.Add("state", state)
-	for {
-		next := false
+	paginate := true
+	for paginate == true {
 		req, err := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
 		if err != nil {
 			return m, err
@@ -180,18 +180,15 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 		for _, elem := range parsedHeader {
 			if elem.Rel == "next" {
 				URL = elem.URI
-				next = true
 				break
-				}
 			}
-			if next == true {
-				continue
-			}
+			paginate = false
 			break
 		}
-		
-		return m, nil
 	}
+		
+	return m, nil
+}
 
 // CreateMilestoneData creates new milestones with title and due date
 func createMilestoneData(advance int, timeInterval string) map[string]string {
