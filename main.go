@@ -165,10 +165,6 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 		if err != nil {
 			return m, err
 		}
-		_, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return m, err
-		}
 		respByte, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return m, err
@@ -182,8 +178,10 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 				URL = elem.URI
 				break
 			}
+			if elem.Rel == "prev" {
+				continue
+			}
 			paginate = false
-			break
 		}
 	}
 		
