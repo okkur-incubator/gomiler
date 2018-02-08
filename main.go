@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -154,9 +155,19 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	params.Add("state", state)
+	var pages int
 	paginate := true
 	for paginate == true {
-		req, err := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
+		paginate = false
+		tmpM := []milestoneAPI{}
+
+		// Overwrite state information in URL
+		u, _ := url.Parse(URL)
+		q := u.Query()
+		q.Set("state", state)
+		u.RawQuery = q.Encode()
+
+		req, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {
 			return m, err
 		}
@@ -173,20 +184,26 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 		if err != nil {
 			return m, err
 		}
-		json.Unmarshal(respByte, &m)
+		json.Unmarshal(respByte, &tmpM)
+		m = append(m, tmpM...)
 		defer resp.Body.Close()
+
+		// Retrieve next page header
 		linkHeader := resp.Header.Get("Link")
 		parsedHeader := link.Parse(linkHeader)
 		for _, elem := range parsedHeader {
-			if elem.Rel == "next" {
-				URL = elem.URI
-				break
+			if elem.Rel != "next" {
+				continue
 			}
-			paginate = false
-			break
+
+			// Prevent break and modify URL for next iteration
+			if elem.Rel == "next" {
+				pages++
+				URL = elem.URI
+				paginate = true
+			}
 		}
 	}
-		
 	return m, nil
 }
 
@@ -255,7 +272,7 @@ func createMilestoneMap(milestoneAPI []milestoneAPI) map[string]milestone {
 		m.DueDate = v.DueDate
 		m.ID = strconv.Itoa(v.ID)
 		m.Title = v.Title
-		milestones[v.DueDate] = m
+		milestones[v.Title] = m
 	}
 
 	return milestones
@@ -297,8 +314,8 @@ func main() {
 		newMilestones[k] = v
 	}
 
-	for k, _ := range milestoneData {
-		for ok, _ := range activeMilestones {
+	for k := range milestoneData {
+		for ok := range activeMilestones {
 			if k == ok {
 				delete(newMilestones, k)
 			}
@@ -308,8 +325,13 @@ func main() {
 		logger.Println("No milestone creation needed")
 	} else {
 		logger.Println("New milestones:")
-		for title, dueDate := range newMilestones {
-			logger.Printf("Title: %s - Due Date: %s", title, dueDate)
+		var keys []string
+		for k := range newMilestones {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			logger.Printf("Title: %s - Due Date: %s", key, newMilestones[key])
 		}
 		err = createMilestones(baseURL, token, projectID, newMilestones)
 		if err != nil {
