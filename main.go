@@ -156,6 +156,7 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	params.Add("state", state)
 	paginate := true
 	for paginate == true {
+		paginate = false
 		req, err := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
 		if err != nil {
 			return m, err
@@ -173,15 +174,22 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 		defer resp.Body.Close()
 		linkHeader := resp.Header.Get("Link")
 		parsedHeader := link.Parse(linkHeader)
+		var pages int
+		links := map[int]string{}
 		for _, elem := range parsedHeader {
-			if elem.Rel == "next" {
-				URL = elem.URI
-				break
-			}
-			if elem.Rel == "prev" {
+			if elem.Rel != "next" {
 				continue
 			}
-			paginate = false
+			if elem.Rel == "next" {
+				pages++
+				link := elem.URI
+				links[pages] = link
+			}
+		}
+		for k := range links {
+			URL = links[k]
+			paginate = true
+			break
 		}
 	}
 		
