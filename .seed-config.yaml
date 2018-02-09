@@ -32,6 +32,8 @@ cla:
   copyrightHolder: "Michael Grosser"
 
 maintainers:
+  - name: "David Riesz"
+    nick: "dbriesz"
   - name: "Adeel Hussain"
     nick: "adeilh"
   - name: "Michael Grosser"
