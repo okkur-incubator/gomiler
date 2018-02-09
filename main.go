@@ -294,8 +294,8 @@ func main() {
 		newMilestones[k] = v
 	}
 
-	for k, _ := range milestoneData {
-		for ok, _ := range oldMilestones {
+	for k := range milestoneData {
+		for ok := range oldMilestones {
 			if k == ok {
 				delete(newMilestones, k)
 			}
