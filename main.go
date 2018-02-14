@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -320,8 +321,13 @@ func main() {
 		logger.Println("No milestone creation needed")
 	} else {
 		logger.Println("New milestones:")
-		for title, dueDate := range newMilestones {
-			logger.Printf("Title: %s - Due Date: %s", title, dueDate)
+		var keys []string
+		for k := range newMilestones {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			logger.Printf("Title: %s - Due Date: %s", key, newMilestones[key])
 		}
 		err = createMilestones(baseURL, token, projectID, newMilestones)
 		if err != nil {
