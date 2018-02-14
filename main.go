@@ -154,10 +154,19 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	params.Add("state", state)
+	var pages int
 	paginate := true
 	for paginate == true {
 		paginate = false
-		req, err := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
+		tmpM := []milestoneAPI{}
+
+		// Overwrite state information in URL
+		u, _ := url.Parse(URL)
+		q := u.Query()
+		q.Set("state", state)
+		u.RawQuery = q.Encode()
+
+		req, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {
 			return m, err
 		}
@@ -170,29 +179,26 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 		if err != nil {
 			return m, err
 		}
-		json.Unmarshal(respByte, &m)
+		json.Unmarshal(respByte, &tmpM)
+		m = append(m, tmpM...)
 		defer resp.Body.Close()
+
+		// Retrieve next page header
 		linkHeader := resp.Header.Get("Link")
 		parsedHeader := link.Parse(linkHeader)
-		var pages int
-		links := map[int]string{}
 		for _, elem := range parsedHeader {
 			if elem.Rel != "next" {
 				continue
 			}
+
+			// Prevent break and modify URL for next iteration
 			if elem.Rel == "next" {
 				pages++
-				link := elem.URI
-				links[pages] = link
+				URL = elem.URI
+				paginate = true
 			}
 		}
-		for k := range links {
-			URL = links[k]
-			paginate = true
-			break
-		}
 	}
-		
 	return m, nil
 }
 
@@ -261,7 +267,7 @@ func createMilestoneMap(milestoneAPI []milestoneAPI) map[string]milestone {
 		m.DueDate = v.DueDate
 		m.ID = strconv.Itoa(v.ID)
 		m.Title = v.Title
-		milestones[v.DueDate] = m
+		milestones[v.Title] = m
 	}
 
 	return milestones
@@ -303,8 +309,8 @@ func main() {
 		newMilestones[k] = v
 	}
 
-	for k, _ := range milestoneData {
-		for ok, _ := range activeMilestones {
+	for k := range milestoneData {
+		for ok := range activeMilestones {
 			if k == ok {
 				delete(newMilestones, k)
 			}
