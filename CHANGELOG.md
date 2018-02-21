@@ -33,8 +33,7 @@ file | sha1 hash | md5 hash
 
 
 ## Changes since v0.0.0
-  - Feature X
-  - Feature Z
+  - Added Support For Weekly and Monthly Milestones
 
 ## Fixes since v0.0.0
   - Fix 123
