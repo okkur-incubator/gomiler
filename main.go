@@ -251,13 +251,14 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 	return nil
 }
 
-func createMilestoneMap(milestoneAPI []milestoneAPI) (map[string]milestone) {
-	var m milestone
+func createMilestoneMap(milestoneAPI []milestoneAPI) map[string]milestone {
 	milestones := map[string]milestone{}
 	for _, v := range milestoneAPI {
+		var m milestone
 		m.DueDate = v.DueDate
 		m.ID = strconv.Itoa(v.ID)
 		m.Title = v.Title
+		milestones[v.DueDate] = m
 	}
 
 	return milestones
