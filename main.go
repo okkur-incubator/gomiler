@@ -144,7 +144,7 @@ func getActiveMilestones(baseURL string, token string, projectID string) ([]mile
 // Get and return inactive milestones
 func getInactiveMilestones(baseURL string, token string, projectID string) ([]milestoneAPI, error) {
 	state := "closed"
-    return getMilestones(baseURL, token, projectID, state)
+	return getMilestones(baseURL, token, projectID, state)
 }
 
 func getMilestones(baseURL string, token string, projectID string, state string) ([]milestoneAPI, error) {
@@ -154,30 +154,44 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	params.Add("state", state)
-	req, _ := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
-	req.Header.Add("PRIVATE-TOKEN", token)
-	resp, err := client.Do(req)
-	if err != nil {
-		return m, err
-	}
-	respByte, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return m, err
-	}
-	json.Unmarshal(respByte, &m)
-	var linkHeader string
-	linkHeader = resp.Header.Get("Link")
-	parsedHeader := link.Parse(linkHeader)
-	for _, elem := range parsedHeader {
-		if elem.Rel == "next" {
-			json.Unmarshal(respByte, &m)
-			linkHeader = resp.Header.Get("Link")
+	for {
+		next := false
+		req, err := http.NewRequest("GET", URL, strings.NewReader(params.Encode()))
+		if err != nil {
+			return m, err
 		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return m, err
+		}
+		_, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return m, err
+		}
+		respByte, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return m, err
+		}
+		json.Unmarshal(respByte, &m)
+		defer resp.Body.Close()
+		linkHeader := resp.Header.Get("Link")
+		parsedHeader := link.Parse(linkHeader)
+		for _, elem := range parsedHeader {
+			if elem.Rel == "next" {
+				URL = elem.URI
+				next = true
+				break
+				}
+			}
+			if next == true {
+				continue
+			}
+			break
+		}
+		
+		return m, nil
 	}
-	defer resp.Body.Close()
-
-	return m, nil
-}
 
 // CreateMilestoneData creates new milestones with title and due date
 func createMilestoneData(advance int, timeInterval string) map[string]string {
