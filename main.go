@@ -36,7 +36,7 @@ import (
 type milestone struct {
 	DueDate string
 	ID      string
-	Title string
+	Title   string
 }
 
 // Struct to be used for milestone
@@ -104,7 +104,9 @@ func lastDayWeek(lastDay time.Time) time.Time {
 func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
 	projects := []gitLabAPI{}
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", baseURL, nil)
+	strURL := []string{baseURL, "/projects/"}
+	URL := strings.Join(strURL, "")
+	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -264,7 +266,7 @@ func main() {
 	LoggerSetup(os.Stdout)
 
 	// Calling getProjectID
-	baseURL = "https://" + baseURL + "/api/v4" + "/projects/"
+	baseURL = "https://" + baseURL + "/api/v4"
 	projectID, err := getProjectID(baseURL, token, project, namespace)
 	if err != nil {
 		logger.Fatal(err)
