@@ -7,6 +7,7 @@ Daily milestone generation for Gitlab
 **NOTE: This is a work-in-progress, we do not consider it production ready. Use at your own risk.**
 
 Generate one milestone per day/week/month within your Gitlab project.
+
 Use for your Gitlab based ToDo list or sprints.
 
 ## Using Dailymile
@@ -43,3 +44,4 @@ Best place to start is our [contribution guide](/CONTRIBUTING.md).
 ---
 
 Copyright 2017 - The Dailymile Authors
+

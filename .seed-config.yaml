@@ -14,7 +14,7 @@ project:
 vision:
   type: "community"
   overview: |
-    Simple daily milestone generation for Gitlab.
+    Simple milestone generation for Gitlab.
 
 contributionLinks:
   issueTemplate: "/.github/ISSUE_TEMPLATE.md"
