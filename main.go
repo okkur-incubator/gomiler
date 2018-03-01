@@ -148,6 +148,36 @@ func getInactiveMilestones(baseURL string, token string, projectID string) ([]mi
 	return getMilestones(baseURL, token, projectID, state)
 }
 
+func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, projectID string) {
+	client := &http.Client{}
+	params := url.Values{}
+	today := time.Now().Local()
+	dateString := "2006-01-02"
+	for k, v := range milestones {
+		milestoneID := v.ID
+		strURL := []string{baseURL, "/projects/", projectID, "/milestones/", milestoneID}
+		URL := strings.Join(strURL, "")
+		date, err := time.Parse(k, dateString)
+		if err != nil {
+			logger.Println(err)
+		}
+		if date.After(today) {
+			state := "activate"
+			params.Set("state_event", state)
+			req, err := http.NewRequest("PUT", URL, bytes.NewReader([]byte(params.Encode())))
+			if err != nil {
+				logger.Println(err)
+			}
+			req.Header.Add("PRIVATE-TOKEN", token)
+			resp, err := client.Do(req)
+			if err != nil {
+				logger.Println(err)
+			}
+			defer resp.Body.Close()
+		}
+	}
+}
+
 func getMilestones(baseURL string, token string, projectID string, state string) ([]milestoneAPI, error) {
 	m := []milestoneAPI{}
 	client := &http.Client{}
@@ -297,6 +327,18 @@ func main() {
 		logger.Fatal(err)
 		// TODO: check for authentication error (currently it only says project not found)
 	}
+	inactiveMilestones, err := getInactiveMilestones(baseURL, token, projectID)
+	if err != nil {
+		logger.Println(err)
+	}
+	closedMilestones := createMilestoneMap(inactiveMilestones)
+	// copy map of inactive milestones
+	tmpMilestones := map[string]milestone{}
+	for k, v := range closedMilestones {
+		tmpMilestones[k] = v
+	}
+	reactivateClosedMilestones(tmpMilestones, baseURL, token, projectID)
+
 	milestones, err := getActiveMilestones(baseURL, token, projectID)
 	if err != nil {
 		logger.Println(err)
@@ -304,7 +346,7 @@ func main() {
 	activeMilestones := createMilestoneMap(milestones)
 	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
 
-	// copy map
+	// copy map of new milestones
 	newMilestones := map[string]string{}
 	for k, v := range milestoneData {
 		newMilestones[k] = v
