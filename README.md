@@ -6,22 +6,35 @@ Daily milestone generation for Gitlab
 
 **NOTE: This is a work-in-progress, we do not consider it production ready. Use at your own risk.**
 
+<<<<<<< HEAD
 Generate one milestone per day\week\month within your Gitlab project.
+=======
+Generate one milestone per day/week/month within your Gitlab project.
+>>>>>>> 19ac60a5a20c8dd752f9b43d3a1dbb908ee565eb
 Use for your Gitlab based ToDo list or sprints.
 
 ## Using Dailymile
 ```
+<<<<<<< HEAD
 
+=======
+>>>>>>> 19ac60a5a20c8dd752f9b43d3a1dbb908ee565eb
 git clone https://github.com/okkur/dailymile.git
 cd dailymile
 go build main.go
 ./daily_milestone -Advance=10 -Namespace=gitnamespace  -ProjectName=gitproject -Token=123456789 -BaseURL=some.thing.eu  -TimeInterval=Weekly
 
 or
+<<<<<<< HEAD
 go run main.go --Advance=10 --Namespace=gitnamespace  --ProjectName=gitproject --Token=123456789 --BaseURL=some.thing.eu  --TimeInterval=Weekly
 
 flags:
 
+=======
+
+go run main.go --Advance=10 --Namespace=gitnamespace  --ProjectName=gitproject --Token=123456789 --BaseURL=some.thing.eu  --TimeInterval=Weekly
+flags:
+>>>>>>> 19ac60a5a20c8dd752f9b43d3a1dbb908ee565eb
 Advance: Define timeframe
 Namespace: Gitlab Namespace
 Project: Gitlab Project Namespace
