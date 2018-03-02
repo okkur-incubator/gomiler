@@ -378,7 +378,7 @@ func main() {
 		}
 		sort.Strings(keys)
 		for _, key := range keys {
-			logger.Printf("Title: %s - Due Date: %s", key, newMilestones[key].DueDate)
+			logger.Printf("Title: %s - Due Date: %s", newMilestones[key].Title, newMilestones[key].DueDate)
 		}
 		err = createMilestones(baseURL, token, projectID, newMilestones)
 		if err != nil {
