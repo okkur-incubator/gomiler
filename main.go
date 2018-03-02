@@ -15,7 +15,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -148,13 +147,38 @@ func getInactiveMilestones(baseURL string, token string, projectID string) ([]mi
 	return getMilestones(baseURL, token, projectID, state)
 }
 
+func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, projectID string) error {
+	client := &http.Client{}
+	for _, v := range milestones {
+		milestoneID := v.ID
+		strURL := []string{baseURL, "/projects/", projectID, "/milestones/", milestoneID}
+		URL := strings.Join(strURL, "")
+
+		// Overwrite state information in URL
+		u, _ := url.Parse(URL)
+		q := u.Query()
+		q.Set("state_event", "activate")
+		u.RawQuery = q.Encode()
+		req, err := http.NewRequest("PUT", u.String(), nil)
+		if err != nil {
+			logger.Println(err)
+		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+	}
+
+	return nil
+}
+
 func getMilestones(baseURL string, token string, projectID string, state string) ([]milestoneAPI, error) {
 	m := []milestoneAPI{}
 	client := &http.Client{}
 	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
 	URL := strings.Join(strURL, "")
-	params := url.Values{}
-	params.Add("state", state)
 	var pages int
 	paginate := true
 	for paginate == true {
@@ -204,49 +228,59 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func createMilestoneData(advance int, timeInterval string) map[string]string {
+func createMilestoneData(advance int, timeInterval string) map[string]milestone {
 	today := time.Now().Local()
-	m := map[string]string{}
+	milestones := map[string]milestone{}
 	switch {
 	case timeInterval == "daily":
 		for i := 0; i < advance; i++ {
-			date := today.AddDate(0, 0, i).Format("2006-01-02")
-			m[date] = date
+			var m milestone
+			dueDate := today.AddDate(0, 0, i).Format("2006-01-02")
+			title := dueDate
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
 		}
 	case timeInterval == "weekly":
 		for i := 0; i < advance; i++ {
+			var m milestone
 			lastDay := lastDayWeek(today)
 			year, week := lastDay.ISOWeek()
 			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
 			dueDate := lastDay.Format("2006-01-02")
-			m[title] = dueDate
-			lastDay = lastDay.AddDate(0, 0, 7)
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
+			today = lastDay.AddDate(0, 0, 7)
 		}
 	case timeInterval == "monthly":
 		for i := 0; i < advance; i++ {
+			var m milestone
 			date := today.AddDate(0, i, 0)
-			lastday := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
+			lastDay := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
 			title := date.Format("2006-01")
-			dueDate := lastday.Format("2006-01-02")
-			m[title] = dueDate
+			dueDate := lastDay.Format("2006-01-02")
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
 		}
 	default:
 		logger.Println("Error: Not Correct TimeInterval")
-		return m
+		return milestones
 	}
 
-	return m
+	return milestones
 }
 
-func createMilestones(baseURL string, token string, projectID string, milestones map[string]string) error {
+func createMilestones(baseURL string, token string, projectID string, milestones map[string]milestone) error {
 	client := &http.Client{}
 	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
-	for k, v := range milestones {
-		params.Set("title", k)
-		params.Set("dueDate", v)
-		req, err := http.NewRequest("POST", URL, bytes.NewReader([]byte(params.Encode())))
+	for _, v := range milestones {
+		params.Set("title", v.Title)
+		params.Set("dueDate", v.DueDate)
+		req, err := http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
 		if err != nil {
 			return err
 		}
@@ -290,6 +324,8 @@ func main() {
 	// Initializing logger
 	LoggerSetup(os.Stdout)
 
+	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
+
 	// Calling getProjectID
 	baseURL = "https://" + baseURL + "/api/v4"
 	projectID, err := getProjectID(baseURL, token, project, namespace)
@@ -297,25 +333,40 @@ func main() {
 		logger.Fatal(err)
 		// TODO: check for authentication error (currently it only says project not found)
 	}
-	milestones, err := getActiveMilestones(baseURL, token, projectID)
+	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
 	if err != nil {
 		logger.Println(err)
 	}
-	activeMilestones := createMilestoneMap(milestones)
-	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
-
-	// copy map
-	newMilestones := map[string]string{}
+	activeMilestones := createMilestoneMap(activeMilestonesAPI)
+	// copy map of active milestones
+	newMilestones := map[string]milestone{}
 	for k, v := range milestoneData {
 		newMilestones[k] = v
 	}
-
 	for k := range milestoneData {
 		for ok := range activeMilestones {
 			if k == ok {
 				delete(newMilestones, k)
 			}
 		}
+	}
+	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID)
+	if err != nil {
+		logger.Println(err)
+	}
+	closedMilestones := createMilestoneMap(closedMilestonesAPI)
+	// copy map of closed milestones
+	editMilestones := map[string]milestone{}
+	for k := range milestoneData {
+		for ek, ev := range closedMilestones {
+			if k == ek {
+				editMilestones[ek] = ev
+			}
+		}
+	}
+	err = reactivateClosedMilestones(editMilestones, baseURL, token, projectID)
+	if err != nil {
+		logger.Println(err)
 	}
 	if len(newMilestones) == 0 {
 		logger.Println("No milestone creation needed")
@@ -327,7 +378,7 @@ func main() {
 		}
 		sort.Strings(keys)
 		for _, key := range keys {
-			logger.Printf("Title: %s - Due Date: %s", key, newMilestones[key])
+			logger.Printf("Title: %s - Due Date: %s", newMilestones[key].Title, newMilestones[key].DueDate)
 		}
 		err = createMilestones(baseURL, token, projectID, newMilestones)
 		if err != nil {
