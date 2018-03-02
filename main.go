@@ -149,8 +149,6 @@ func getInactiveMilestones(baseURL string, token string, projectID string) ([]mi
 
 func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, projectID string) error {
 	client := &http.Client{}
-	params := url.Values{}
-	params.Add("state_event", "activate")
 	for _, v := range milestones {
 		milestoneID := v.ID
 		strURL := []string{baseURL, "/projects/", projectID, "/milestones/", milestoneID}
@@ -181,8 +179,6 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	client := &http.Client{}
 	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
 	URL := strings.Join(strURL, "")
-	params := url.Values{}
-	params.Add("state", state)
 	var pages int
 	paginate := true
 	for paginate == true {
