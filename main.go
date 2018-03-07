@@ -308,6 +308,63 @@ func createMilestoneMap(milestoneAPI []milestoneAPI) map[string]milestone {
 	return milestones
 }
 
+func createAndDisplayNewMilestones(baseURL string, token string,
+	projectID string, milestoneData map[string]milestone) error {
+	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
+	if err != nil {
+		return err
+	}
+	activeMilestones := createMilestoneMap(activeMilestonesAPI)
+	// copy map of active milestones
+	newMilestones := map[string]milestone{}
+	for k, v := range milestoneData {
+		newMilestones[k] = v
+	}
+	for k := range milestoneData {
+		for ok := range activeMilestones {
+			if k == ok {
+				delete(newMilestones, k)
+			}
+		}
+	}
+	if len(newMilestones) == 0 {
+		logger.Println("No milestone creation needed")
+	} else {
+		logger.Println("New milestones:")
+		var keys []string
+		for k := range newMilestones {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			logger.Printf("Title: %s - Due Date: %s", newMilestones[key].Title, newMilestones[key].DueDate)
+		}
+		err = createMilestones(baseURL, token, projectID, newMilestones)
+		if err != nil {
+			return (err)
+		}
+	}
+	return nil
+}
+
+func getClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]milestone) (map[string]milestone, error) {
+	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+	closedMilestones := createMilestoneMap(closedMilestonesAPI)
+	// copy map of closed milestones
+	editMilestones := map[string]milestone{}
+	for k := range milestoneData {
+		for ek, ev := range closedMilestones {
+			if k == ek {
+				editMilestones[ek] = ev
+			}
+		}
+	}
+	return editMilestones, nil
+}
+
 func main() {
 	// Declaring variables for flags
 	var token, baseURL, namespace, project, timeInterval string
@@ -333,56 +390,16 @@ func main() {
 		logger.Fatal(err)
 		// TODO: check for authentication error (currently it only says project not found)
 	}
-	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
+	err = createAndDisplayNewMilestones(baseURL, token, projectID, milestoneData)
 	if err != nil {
 		logger.Println(err)
 	}
-	activeMilestones := createMilestoneMap(activeMilestonesAPI)
-	// copy map of active milestones
-	newMilestones := map[string]milestone{}
-	for k, v := range milestoneData {
-		newMilestones[k] = v
-	}
-	for k := range milestoneData {
-		for ok := range activeMilestones {
-			if k == ok {
-				delete(newMilestones, k)
-			}
-		}
-	}
-	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID)
+	editMilestones, err := getClosedMilestones(baseURL, token, projectID, milestoneData)
 	if err != nil {
 		logger.Println(err)
-	}
-	closedMilestones := createMilestoneMap(closedMilestonesAPI)
-	// copy map of closed milestones
-	editMilestones := map[string]milestone{}
-	for k := range milestoneData {
-		for ek, ev := range closedMilestones {
-			if k == ek {
-				editMilestones[ek] = ev
-			}
-		}
 	}
 	err = reactivateClosedMilestones(editMilestones, baseURL, token, projectID)
 	if err != nil {
 		logger.Println(err)
-	}
-	if len(newMilestones) == 0 {
-		logger.Println("No milestone creation needed")
-	} else {
-		logger.Println("New milestones:")
-		var keys []string
-		for k := range newMilestones {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, key := range keys {
-			logger.Printf("Title: %s - Due Date: %s", newMilestones[key].Title, newMilestones[key].DueDate)
-		}
-		err = createMilestones(baseURL, token, projectID, newMilestones)
-		if err != nil {
-			logger.Println(err)
-		}
 	}
 }
