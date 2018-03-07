@@ -365,6 +365,19 @@ func getClosedMilestones(baseURL string, token string, projectID string, milesto
 	return editMilestones, nil
 }
 
+func validateBaseURLScheme(baseURL string) (string, error) {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	scheme := u.Scheme
+	if scheme != "" {
+		return baseURL, nil
+	}
+	URL := "https://" + baseURL
+	return URL, nil
+}
+
 func main() {
 	// Declaring variables for flags
 	var token, baseURL, namespace, project, timeInterval string
@@ -383,8 +396,14 @@ func main() {
 
 	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
 
+	// Validate baseURL scheme
+	URL, err := validateBaseURLScheme(baseURL)
+	if err != nil {
+		logger.Println(err)
+	}
+
 	// Calling getProjectID
-	baseURL = "https://" + baseURL + "/api/v4"
+	baseURL = URL + "/api/v4"
 	projectID, err := getProjectID(baseURL, token, project, namespace)
 	if err != nil {
 		logger.Fatal(err)
