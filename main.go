@@ -106,21 +106,48 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	client := &http.Client{}
 	strURL := []string{baseURL, "/projects/"}
 	URL := strings.Join(strURL, "")
-	req, err := http.NewRequest("GET", URL, nil)
-	if err != nil {
-		return "", err
+	var pages int
+	paginate := true
+	for paginate == true {
+		paginate = false
+		tmpM := []gitLabAPI{}
+		u, _ := url.Parse(URL)
+		q := u.Query()
+		q.Set("search", projectname)
+		u.RawQuery = q.Encode()
+		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			return "", err
+		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return "", err
+		}
+		respByte, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+		json.Unmarshal(respByte, &tmpM)
+		projects = append(projects, tmpM...)
+		defer resp.Body.Close()
+
+		// Retrieve next page header
+		linkHeader := resp.Header.Get("Link")
+		parsedHeader := link.Parse(linkHeader)
+		for _, elem := range parsedHeader {
+			if elem.Rel != "next" {
+				continue
+			}
+
+			// Prevent break and modify URL for next iteration
+			if elem.Rel == "next" {
+				pages++
+				URL = elem.URI
+				paginate = true
+			}
+		}
 	}
-	req.Header.Add("PRIVATE-TOKEN", token)
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	respByte, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	json.Unmarshal(respByte, &projects)
-	defer resp.Body.Close()
 	for _, p := range projects {
 		// Check for returned error messages
 		if p.Name == "message" {
