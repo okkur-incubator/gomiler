@@ -368,7 +368,7 @@ func getClosedMilestones(baseURL string, token string, projectID string, milesto
 func validateBaseURLScheme(baseURL string) (string, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
-		logger.Fatal(err)
+		return "", err
 	}
 	scheme := u.Scheme
 	if scheme != "" {
