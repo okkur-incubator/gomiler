@@ -106,7 +106,11 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	client := &http.Client{}
 	strURL := []string{baseURL, "/projects/"}
 	URL := strings.Join(strURL, "")
-	req, err := http.NewRequest("GET", URL, nil)
+	u, _ := url.Parse(URL)
+	q := u.Query()
+	q.Set("search", projectname)
+	u.RawQuery = q.Encode()
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return "", err
 	}
