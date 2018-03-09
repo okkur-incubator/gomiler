@@ -100,21 +100,12 @@ func lastDayWeek(lastDay time.Time) time.Time {
 	return lastDay
 }
 
-func paginate(URL string, token string, state string) ([][]byte, error) {
+func paginate(URL string, token string) ([][]byte, error) {
 	apiData := make([][]byte, 1)
 	client := &http.Client{}
 	paginate := true
 	for paginate == true {
 		paginate = false
-
-		// Check if state needs to be overwritten
-		if state != "" {
-			u, _ := url.Parse(URL)
-			q := u.Query()
-			q.Set("state", state)
-			u.RawQuery = q.Encode()
-			URL = u.String()
-		}
 		req, err := http.NewRequest("GET", URL, nil)
 		if err != nil {
 			return nil, err
@@ -157,7 +148,7 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	q := u.Query()
 	q.Set("search", projectname)
 	u.RawQuery = q.Encode()
-	apiData, err := paginate(u.String(), token, "")
+	apiData, err := paginate(u.String(), token)
 	if err != nil {
 		return "", err
 	}
@@ -227,7 +218,7 @@ func getMilestones(baseURL string, token string, projectID string, state string)
 	q := u.Query()
 	q.Set("state", state)
 	u.RawQuery = q.Encode()
-	apiData, err := paginate(u.String(), token, state)
+	apiData, err := paginate(u.String(), token)
 	if err != nil {
 		return nil, err
 	}
