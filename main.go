@@ -100,36 +100,35 @@ func lastDayWeek(lastDay time.Time) time.Time {
 	return lastDay
 }
 
-// Function to get project ID from the gitLabAPI
-func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
-	projects := []gitLabAPI{}
+func paginate(URL string, token string, state string) ([][]byte, error) {
+	apiData := make([][]byte, 1)
 	client := &http.Client{}
-	strURL := []string{baseURL, "/projects/"}
-	URL := strings.Join(strURL, "")
-	var pages int
 	paginate := true
 	for paginate == true {
 		paginate = false
-		tmpM := []gitLabAPI{}
-		u, _ := url.Parse(URL)
-		q := u.Query()
-		q.Set("search", projectname)
-		u.RawQuery = q.Encode()
-		req, err := http.NewRequest("GET", u.String(), nil)
+
+		// Check if state needs to be overwritten
+		if state != "" {
+			u, _ := url.Parse(URL)
+			q := u.Query()
+			q.Set("state", state)
+			u.RawQuery = q.Encode()
+			URL = u.String()
+		}
+		req, err := http.NewRequest("GET", URL, nil)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		req.Header.Add("PRIVATE-TOKEN", token)
 		resp, err := client.Do(req)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		respByte, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		json.Unmarshal(respByte, &tmpM)
-		projects = append(projects, tmpM...)
+		apiData = append(apiData, respByte)
 		defer resp.Body.Close()
 
 		// Retrieve next page header
@@ -142,11 +141,31 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 
 			// Prevent break and modify URL for next iteration
 			if elem.Rel == "next" {
-				pages++
 				URL = elem.URI
 				paginate = true
 			}
 		}
+	}
+	return apiData, nil
+}
+
+// Function to get project ID from the gitLabAPI
+func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
+	strURL := []string{baseURL, "/projects/"}
+	URL := strings.Join(strURL, "")
+	u, _ := url.Parse(URL)
+	q := u.Query()
+	q.Set("search", projectname)
+	u.RawQuery = q.Encode()
+	apiData, err := paginate(u.String(), token, "")
+	if err != nil {
+		return "", err
+	}
+	projects := []gitLabAPI{}
+	tmpM := []gitLabAPI{}
+	for _, v := range apiData {
+		json.Unmarshal(v, &tmpM)
+		projects = append(projects, tmpM...)
 	}
 	for _, p := range projects {
 		// Check for returned error messages
@@ -202,56 +221,23 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 }
 
 func getMilestones(baseURL string, token string, projectID string, state string) ([]milestoneAPI, error) {
-	m := []milestoneAPI{}
-	client := &http.Client{}
 	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
 	URL := strings.Join(strURL, "")
-	var pages int
-	paginate := true
-	for paginate == true {
-		paginate = false
-		tmpM := []milestoneAPI{}
-
-		// Overwrite state information in URL
-		u, _ := url.Parse(URL)
-		q := u.Query()
-		q.Set("state", state)
-		u.RawQuery = q.Encode()
-
-		req, err := http.NewRequest("GET", u.String(), nil)
-		if err != nil {
-			return m, err
-		}
-		req.Header.Add("PRIVATE-TOKEN", token)
-		resp, err := client.Do(req)
-		if err != nil {
-			return m, err
-		}
-		respByte, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return m, err
-		}
-		json.Unmarshal(respByte, &tmpM)
-		m = append(m, tmpM...)
-		defer resp.Body.Close()
-
-		// Retrieve next page header
-		linkHeader := resp.Header.Get("Link")
-		parsedHeader := link.Parse(linkHeader)
-		for _, elem := range parsedHeader {
-			if elem.Rel != "next" {
-				continue
-			}
-
-			// Prevent break and modify URL for next iteration
-			if elem.Rel == "next" {
-				pages++
-				URL = elem.URI
-				paginate = true
-			}
-		}
+	u, _ := url.Parse(URL)
+	q := u.Query()
+	q.Set("state", state)
+	u.RawQuery = q.Encode()
+	apiData, err := paginate(u.String(), token, state)
+	if err != nil {
+		return nil, err
 	}
-	return m, nil
+	milestones := []milestoneAPI{}
+	tmpM := []milestoneAPI{}
+	for _, v := range apiData {
+		json.Unmarshal(v, &tmpM)
+		milestones = append(milestones, tmpM...)
+	}
+	return milestones, nil
 }
 
 // CreateMilestoneData creates new milestones with title and due date
