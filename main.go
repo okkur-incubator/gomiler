@@ -53,7 +53,7 @@ type milestoneAPI struct {
 	DueDate     string     `json:"due_date"`
 }
 
-// Struct to get ID from main API
+// Struct for GitLab API
 type gitLabAPI struct {
 	ID          int        `json:"id"`
 	Iid         int        `json:"iid"`
@@ -73,6 +73,19 @@ type gitLabAPI struct {
 		Kind     string `json:"kind"`
 		FullPath string `json:"full_path"`
 	} `json:"namespace"`
+}
+
+// Struct for GitHub API
+type gitHubAPI struct {
+	URL       	string     `json:"url"`
+	ID          int        `json:"id"`
+	Number     	int        `json:"number"`
+	State       string     `json:"state"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	CreatedAt   *time.Time `json:"created_at"`
+	UpdatedAt   *time.Time `json:"updated_at"`
+	DueDate     string     `json:"due_on"`
 }
 
 // Initialization of logging variable
