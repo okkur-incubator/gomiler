@@ -1,4 +1,4 @@
-<--
+<!--
 # v0.2.0
 _2017_
   - [Downloads for v0.2.0](https://github.com/okkur/dailymile/releases/tag/v0.1.0)
