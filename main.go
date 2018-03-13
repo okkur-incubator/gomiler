@@ -77,9 +77,9 @@ type gitLabAPI struct {
 
 // Struct for GitHub API
 type gitHubAPI struct {
-	URL       	string     `json:"url"`
+	URL         string     `json:"url"`
 	ID          int        `json:"id"`
-	Number     	int        `json:"number"`
+	Number      int        `json:"number"`
 	State       string     `json:"state"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
@@ -94,6 +94,38 @@ var logger *log.Logger
 // LoggerSetup Initialization
 func LoggerSetup(info io.Writer) {
 	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+func checkAPI(baseURL string, token string, namespace string, project string) (string, error) {
+	var api string
+	gitlabURL := baseURL + "/api/v4/version"
+	githubURL := "https://api.github.com/repos/" + namespace + "/" + project
+	URLs := [2]string{gitlabURL, githubURL}
+	client := &http.Client{}
+	for _, v := range URLs {
+		req, err := http.NewRequest("GET", v, nil)
+		if err != nil {
+			return "", err
+		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode == 200 {
+			switch {
+			case v == gitlabURL:
+				api = "gitlab"
+				return api, nil
+			case v == githubURL:
+				api = "github"
+				return api, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("Error: could not access GitLab or GitHub APIs")
 }
 
 // Function to get last day of the month
@@ -411,6 +443,11 @@ func main() {
 	// Initializing logger
 	LoggerSetup(os.Stdout)
 
+	// Check which API to use
+	api, err := checkAPI(baseURL, token, namespace, project)
+	if err != nil {
+		logger.Fatal(err)
+	}
 	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
 
 	// Validate baseURL scheme
@@ -420,7 +457,12 @@ func main() {
 	}
 
 	// Calling getProjectID
-	baseURL = URL + "/api/v4"
+	if api == "gitlab" {
+		baseURL = URL + "/api/v4"
+	}
+	if api == "github" {
+		baseURL = URL + "/repos/" + namespace + "/" + project
+	}
 	projectID, err := getProjectID(baseURL, token, project, namespace)
 	if err != nil {
 		logger.Fatal(err)
