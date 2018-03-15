@@ -221,15 +221,15 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 }
 
 // Get and return currently active milestones
-func getActiveMilestones(baseURL string, token string, projectID string) ([]milestoneAPI, error) {
+func getActiveMilestones(baseURL string, token string, projectID string, api string) ([]milestoneAPI, error) {
 	state := "active"
-	return getMilestones(baseURL, token, projectID, state)
+	return getMilestones(baseURL, token, projectID, state, api)
 }
 
 // Get and return inactive milestones
-func getInactiveMilestones(baseURL string, token string, projectID string) ([]milestoneAPI, error) {
+func getInactiveMilestones(baseURL string, token string, projectID string, api string) ([]milestoneAPI, error) {
 	state := "closed"
-	return getMilestones(baseURL, token, projectID, state)
+	return getMilestones(baseURL, token, projectID, state, api)
 }
 
 func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, projectID string) error {
@@ -259,14 +259,24 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 	return nil
 }
 
-func getMilestones(baseURL string, token string, projectID string, state string) ([]milestoneAPI, error) {
-	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
-	URL := strings.Join(strURL, "")
-	u, _ := url.Parse(URL)
-	q := u.Query()
-	q.Set("state", state)
-	u.RawQuery = q.Encode()
-	apiData, err := paginate(u.String(), token)
+func getMilestones(baseURL string, token string, projectID string, state string, api string) ([]milestoneAPI, error) {
+	var strURL []string
+	var URL, newURL string
+	var apiData [][]byte
+	switch {
+	case api == "gitlab":
+		strURL = []string{baseURL, "/projects/", projectID, "/milestones"}
+		URL = strings.Join(strURL, "")
+		u, _ := url.Parse(URL)
+		q := u.Query()
+		q.Set("state", state)
+		u.RawQuery = q.Encode()
+		newURL = u.String()
+	case api == "github":
+		strURL = []string{baseURL, "/milestones"}
+		newURL = strings.Join(strURL, "")
+	}
+	apiData, err := paginate(newURL, token)
 	if err != nil {
 		return nil, err
 	}
@@ -361,8 +371,8 @@ func createMilestoneMap(milestoneAPI []milestoneAPI) map[string]milestone {
 }
 
 func createAndDisplayNewMilestones(baseURL string, token string,
-	projectID string, milestoneData map[string]milestone) error {
-	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
+	projectID string, milestoneData map[string]milestone, api string) error {
+	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID, api)
 	if err != nil {
 		return err
 	}
@@ -399,8 +409,8 @@ func createAndDisplayNewMilestones(baseURL string, token string,
 	return nil
 }
 
-func getClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]milestone) (map[string]milestone, error) {
-	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID)
+func getClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]milestone, api string) (map[string]milestone, error) {
+	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID, api)
 	if err != nil {
 		return nil, err
 	}
@@ -464,23 +474,27 @@ func main() {
 	case api == "gitlab":
 		newBaseURL = URL + "/api/v4"
 		projectID, err = getProjectID(newBaseURL, token, project, namespace)
-	if err != nil {
-		logger.Fatal(err)
-		// TODO: check for authentication error (currently it only says project not found)
-	}
-	err = createAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData)
-	if err != nil {
-		logger.Println(err)
-	}
-	editMilestones, err := getClosedMilestones(newBaseURL, token, projectID, milestoneData)
-	if err != nil {
-		logger.Println(err)
-	}
-	err = reactivateClosedMilestones(editMilestones, newBaseURL, token, projectID)
-	if err != nil {
-		logger.Println(err)
-	}
+		if err != nil {
+			logger.Fatal(err)
+			// TODO: check for authentication error (currently it only says project not found)
+		}
+		err = createAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData, api)
+		if err != nil {
+			logger.Println(err)
+		}
+		editMilestones, err := getClosedMilestones(newBaseURL, token, projectID, milestoneData, api)
+		if err != nil {
+			logger.Println(err)
+		}
+		err = reactivateClosedMilestones(editMilestones, newBaseURL, token, projectID)
+		if err != nil {
+			logger.Println(err)
+		}
 	case api == "github":
 		newBaseURL = URL + "/repos/" + namespace + "/" + project
+		err = createAndDisplayNewMilestones(newBaseURL, token, "", milestoneData, api)
+		if err != nil {
+			logger.Println(err)
+		}
 	}
 }
