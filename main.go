@@ -98,19 +98,24 @@ func LoggerSetup(info io.Writer) {
 }
 
 func checkAPI(baseURL string, token string, namespace string, project string) (string, error) {
-	gitlab := baseURL + "/api/v4/version"
-	github := "https://api.github.com/repos/" + namespace + "/" + project
-	URLs := [2]string{gitlab, github}
+	gitlab := "gitlab"
+	github := "github"
+	gitlabURL := baseURL + "/api/v4/version"
+	githubURL := "https://api.github.com/repos/" + namespace + "/" + project
+	m := map[string]string{
+		gitlab: gitlabURL,
+		github: githubURL,
+	}
 	client := &http.Client{}
-	for _, v := range URLs {
+	for k, v := range m {
 		req, err := http.NewRequest("GET", v, nil)
 		if err != nil {
 			return "", err
 		}
-		if v == gitlab {
+		if k == gitlab {
 			req.Header.Add("PRIVATE-TOKEN", token)
 		}
-		if v == github {
+		if k == github {
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
@@ -120,7 +125,7 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode == 200 {
-			return v, nil
+			return k, nil
 		}
 	}
 	return "", fmt.Errorf("Error: could not access GitLab or GitHub APIs")
@@ -453,29 +458,28 @@ func main() {
 	if err != nil {
 		logger.Println(err)
 	}
-
 	// Calling getProjectID
-	var newBaseURL string
+	var newBaseURL, projectID string
 	switch {
 	case api == "gitlab":
 		newBaseURL = URL + "/api/v4"
 	case api == "github":
 		newBaseURL = URL + "/repos/" + namespace + "/" + project
 	}
-	projectID, err := getProjectID(newBaseURL, token, project, namespace)
+	projectID, err = getProjectID(newBaseURL, token, project, namespace)
 	if err != nil {
 		logger.Fatal(err)
 		// TODO: check for authentication error (currently it only says project not found)
 	}
-	err = createAndDisplayNewMilestones(baseURL, token, projectID, milestoneData)
+	err = createAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData)
 	if err != nil {
 		logger.Println(err)
 	}
-	editMilestones, err := getClosedMilestones(baseURL, token, projectID, milestoneData)
+	editMilestones, err := getClosedMilestones(newBaseURL, token, projectID, milestoneData)
 	if err != nil {
 		logger.Println(err)
 	}
-	err = reactivateClosedMilestones(editMilestones, baseURL, token, projectID)
+	err = reactivateClosedMilestones(editMilestones, newBaseURL, token, projectID)
 	if err != nil {
 		logger.Println(err)
 	}
