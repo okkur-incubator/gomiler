@@ -334,14 +334,25 @@ func createMilestoneData(advance int, timeInterval string) map[string]milestone 
 	return milestones
 }
 
-func createMilestones(baseURL string, token string, projectID string, milestones map[string]milestone) error {
+func createMilestones(baseURL string, token string, projectID string, milestones map[string]milestone, api string) error {
 	client := &http.Client{}
-	strURL := []string{baseURL, "/projects/", projectID, "/milestones"}
+	var strURL []string
+	switch {
+	case api == "gitlab":
+		strURL = []string{baseURL, "/projects/", projectID, "/milestones"}
+	case api == "github":
+		strURL = []string{baseURL, "/milestones"}
+	}
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	for _, v := range milestones {
 		params.Set("title", v.Title)
-		params.Set("dueDate", v.DueDate)
+		switch {
+		case api == "gitlab":
+			params.Set("dueDate", v.DueDate)
+		case api == "github":
+			params.Set("due_on", v.DueDate)
+		}
 		req, err := http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
 		if err != nil {
 			return err
@@ -401,7 +412,7 @@ func createAndDisplayNewMilestones(baseURL string, token string,
 		for _, key := range keys {
 			logger.Printf("Title: %s - Due Date: %s", newMilestones[key].Title, newMilestones[key].DueDate)
 		}
-		err = createMilestones(baseURL, token, projectID, newMilestones)
+		err = createMilestones(baseURL, token, projectID, newMilestones, api)
 		if err != nil {
 			return (err)
 		}
