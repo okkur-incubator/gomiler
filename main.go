@@ -463,10 +463,7 @@ func main() {
 	switch {
 	case api == "gitlab":
 		newBaseURL = URL + "/api/v4"
-	case api == "github":
-		newBaseURL = URL + "/repos/" + namespace + "/" + project
-	}
-	projectID, err = getProjectID(newBaseURL, token, project, namespace)
+		projectID, err = getProjectID(newBaseURL, token, project, namespace)
 	if err != nil {
 		logger.Fatal(err)
 		// TODO: check for authentication error (currently it only says project not found)
@@ -482,5 +479,8 @@ func main() {
 	err = reactivateClosedMilestones(editMilestones, newBaseURL, token, projectID)
 	if err != nil {
 		logger.Println(err)
+	}
+	case api == "github":
+		newBaseURL = URL + "/repos/" + namespace + "/" + project
 	}
 }
