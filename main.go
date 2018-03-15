@@ -290,14 +290,20 @@ func getMilestones(baseURL string, token string, projectID string, state string,
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func createMilestoneData(advance int, timeInterval string) map[string]milestone {
+func createMilestoneData(advance int, timeInterval string, api string) map[string]milestone {
 	today := time.Now().Local()
 	milestones := map[string]milestone{}
 	switch {
 	case timeInterval == "daily":
 		for i := 0; i < advance; i++ {
 			var m milestone
-			dueDate := today.AddDate(0, 0, i).Format("2006-01-02")
+			var dueDate string
+			switch {
+			case api == "gitlab":
+				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
+			case api == "github":
+				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
+			}
 			title := dueDate
 			m.Title = title
 			m.DueDate = dueDate
@@ -306,10 +312,18 @@ func createMilestoneData(advance int, timeInterval string) map[string]milestone 
 	case timeInterval == "weekly":
 		for i := 0; i < advance; i++ {
 			var m milestone
+			var dueDate string
 			lastDay := lastDayWeek(today)
 			year, week := lastDay.ISOWeek()
 			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-			dueDate := lastDay.Format("2006-01-02")
+			switch {
+			case api == "gitlab":
+				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
+				dueDate = lastDay.Format("2006-01-02")
+			case api == "github":
+				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
+				dueDate = lastDay.Format(time.RFC3339)
+			}
 			m.Title = title
 			m.DueDate = dueDate
 			milestones[title] = m
@@ -318,10 +332,18 @@ func createMilestoneData(advance int, timeInterval string) map[string]milestone 
 	case timeInterval == "monthly":
 		for i := 0; i < advance; i++ {
 			var m milestone
+			var dueDate string
 			date := today.AddDate(0, i, 0)
 			lastDay := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
 			title := date.Format("2006-01")
-			dueDate := lastDay.Format("2006-01-02")
+			switch {
+			case api == "gitlab":
+				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
+				dueDate = lastDay.Format("2006-01-02")
+			case api == "github":
+				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
+				dueDate = lastDay.Format(time.RFC3339)
+			}
 			m.Title = title
 			m.DueDate = dueDate
 			milestones[title] = m
@@ -472,7 +494,7 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval))
+	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval), api)
 
 	// Validate baseURL scheme
 	URL, err := validateBaseURLScheme(baseURL)
