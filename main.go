@@ -148,7 +148,7 @@ func lastDayWeek(lastDay time.Time) time.Time {
 	return lastDay
 }
 
-func paginate(URL string, token string) ([][]byte, error) {
+func paginate(URL string, token string, api string) ([][]byte, error) {
 	apiData := make([][]byte, 1)
 	client := &http.Client{}
 	paginate := true
@@ -158,7 +158,13 @@ func paginate(URL string, token string) ([][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		req.Header.Add("PRIVATE-TOKEN", token)
+		switch {
+		case api == "gitlab":
+			req.Header.Add("PRIVATE-TOKEN", token)
+		case api == "github":
+			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
+			req.Header.Add("Authorization", "token "+token)
+		}
 		resp, err := client.Do(req)
 		if err != nil {
 			return nil, err
@@ -189,14 +195,14 @@ func paginate(URL string, token string) ([][]byte, error) {
 }
 
 // Function to get project ID from the gitLabAPI
-func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
+func getProjectID(baseURL string, token string, projectname string, namespace string, api string) (string, error) {
 	strURL := []string{baseURL, "/projects/"}
 	URL := strings.Join(strURL, "")
 	u, _ := url.Parse(URL)
 	q := u.Query()
 	q.Set("search", projectname)
 	u.RawQuery = q.Encode()
-	apiData, err := paginate(u.String(), token)
+	apiData, err := paginate(u.String(), token, api)
 	if err != nil {
 		return "", err
 	}
@@ -232,7 +238,7 @@ func getInactiveMilestones(baseURL string, token string, projectID string, api s
 	return getMilestones(baseURL, token, projectID, state, api)
 }
 
-func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, projectID string) error {
+func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, projectID string, api string) error {
 	client := &http.Client{}
 	for _, v := range milestones {
 		milestoneID := v.ID
@@ -248,7 +254,13 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 		if err != nil {
 			logger.Println(err)
 		}
-		req.Header.Add("PRIVATE-TOKEN", token)
+		switch {
+		case api == "gitlab":
+			req.Header.Add("PRIVATE-TOKEN", token)
+		case api == "github":
+			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
+			req.Header.Add("Authorization", "token "+token)
+		}
 		resp, err := client.Do(req)
 		if err != nil {
 			return err
@@ -276,7 +288,7 @@ func getMilestones(baseURL string, token string, projectID string, state string,
 		strURL = []string{baseURL, "/milestones"}
 		newURL = strings.Join(strURL, "")
 	}
-	apiData, err := paginate(newURL, token)
+	apiData, err := paginate(newURL, token, api)
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +391,13 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 		if err != nil {
 			return err
 		}
-		req.Header.Add("PRIVATE-TOKEN", token)
+		switch {
+		case api == "gitlab":
+			req.Header.Add("PRIVATE-TOKEN", token)
+		case api == "github":
+			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
+			req.Header.Add("Authorization", "token "+token)
+		}
 		resp, err := client.Do(req)
 		if err != nil {
 			return err
@@ -506,7 +524,7 @@ func main() {
 	switch {
 	case api == "gitlab":
 		newBaseURL = URL + "/api/v4"
-		projectID, err = getProjectID(newBaseURL, token, project, namespace)
+		projectID, err = getProjectID(newBaseURL, token, project, namespace, api)
 		if err != nil {
 			logger.Fatal(err)
 			// TODO: check for authentication error (currently it only says project not found)
@@ -519,7 +537,7 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		err = reactivateClosedMilestones(editMilestones, newBaseURL, token, projectID)
+		err = reactivateClosedMilestones(editMilestones, newBaseURL, token, projectID, api)
 		if err != nil {
 			logger.Println(err)
 		}
