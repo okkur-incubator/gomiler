@@ -310,14 +310,15 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 	case timeInterval == "daily":
 		for i := 0; i < advance; i++ {
 			var m milestone
-			var dueDate string
+			var dueDate, title string
 			switch {
 			case api == "gitlab":
 				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
+				title = dueDate
 			case api == "github":
 				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
+				title = today.AddDate(0, 0, i).Format("2006-01-02")
 			}
-			title := dueDate
 			m.Title = title
 			m.DueDate = dueDate
 			milestones[title] = m
@@ -394,10 +395,10 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 		case api == "github":
 			params.Set("due_on", v.DueDate)
 			create := struct {
-				Title string `json:"title"`
+				Title   string `json:"title"`
 				DueDate string `json:"due_on"`
 			}{
-				Title: v.Title,
+				Title:   v.Title,
 				DueDate: v.DueDate,
 			}
 			createBytes, err := json.Marshal(create)
