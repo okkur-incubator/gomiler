@@ -101,7 +101,7 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 	gitlab := "gitlab"
 	github := "github"
 	gitlabURL := baseURL + "/api/v4/version"
-	githubURL := "https://api.github.com/repos/" + namespace + "/" + project
+	githubURL := baseURL + "/repos/" + namespace + "/" + project
 	m := map[string]string{
 		gitlab: gitlabURL,
 		github: githubURL,
