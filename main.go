@@ -509,12 +509,12 @@ func main() {
 	var token, baseURL, namespace, project, timeInterval string
 	var advance int
 	// Command Line Parsing Starts
-	flag.StringVar(&token, "Token", "jGWPwqQUuf37b", "Gitlab api key/token")
-	flag.StringVar(&timeInterval, "TimeInterval", "daily", "Set milestone to daily, weekly or monthly")
-	flag.StringVar(&baseURL, "BaseURL", "dev.example.com", "Gitlab api base url")
-	flag.StringVar(&namespace, "Namespace", "someNamespace", "Namespace to use in Gitlab")
-	flag.StringVar(&project, "ProjectName", "someProject", "Project to use in Gitlab")
-	flag.IntVar(&advance, "Advance", 30, "Define timeframe to generate milestones in advance")
+	flag.StringVar(&token, "token", "jGWPwqQUuf37b", "Gitlab api key/token")
+	flag.StringVar(&timeInterval, "time-interval", "daily", "Set milestone to daily, weekly or monthly")
+	flag.StringVar(&baseURL, "base-url", "dev.example.com", "Gitlab api base url")
+	flag.StringVar(&namespace, "namespace", "someNamespace", "Namespace to use in Gitlab")
+	flag.StringVar(&project, "project", "someProject", "Project to use in Gitlab")
+	flag.IntVar(&advance, "advance", 30, "Define timeframe to generate milestones in advance")
 	flag.Parse() //Command Line Parsing Ends
 
 	// Initializing logger
