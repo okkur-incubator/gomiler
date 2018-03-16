@@ -15,6 +15,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -380,21 +381,33 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	for _, v := range milestones {
-		params.Set("title", v.Title)
+		var req *http.Request
 		switch {
 		case api == "gitlab":
 			params.Set("dueDate", v.DueDate)
-		case api == "github":
-			params.Set("due_on", v.DueDate)
-		}
-		req, err := http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
-		if err != nil {
-			return err
-		}
-		switch {
-		case api == "gitlab":
+			params.Set("title", v.Title)
+			req, err := http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
+			if err != nil {
+				return err
+			}
 			req.Header.Add("PRIVATE-TOKEN", token)
 		case api == "github":
+			params.Set("due_on", v.DueDate)
+			create := struct {
+				Title string `json:"title"`
+				DueDate string `json:"due_on"`
+			}{
+				Title: v.Title,
+				DueDate: v.DueDate,
+			}
+			createBytes, err := json.Marshal(create)
+			if err != nil {
+				return err
+			}
+			req, err = http.NewRequest("POST", URL, bytes.NewReader(createBytes))
+			if err != nil {
+				return err
+			}
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
