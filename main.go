@@ -497,16 +497,10 @@ func validateBaseURLScheme(baseURL string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	scheme := u.Scheme
-	switch {
-	case scheme == "https":
-		return baseURL, nil
-	case scheme == "":
-		URL := "https://" + baseURL
-		return URL, nil
-	}
-	URL := "https://" + u.Host
-	return URL, nil
+	u.Scheme = "https"
+	q := u.Query()
+	u.RawQuery = q.Encode()
+	return u.String(), nil
 }
 
 func main() {
