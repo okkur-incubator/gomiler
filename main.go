@@ -498,10 +498,14 @@ func validateBaseURLScheme(baseURL string) (string, error) {
 		return "", err
 	}
 	scheme := u.Scheme
-	if scheme != "" {
+	switch {
+	case scheme == "https":
 		return baseURL, nil
+	case scheme == "":
+		URL := "https://" + baseURL
+		return URL, nil
 	}
-	URL := "https://" + baseURL
+	URL := "https://" + u.Host
 	return URL, nil
 }
 
@@ -521,18 +525,19 @@ func main() {
 	// Initializing logger
 	LoggerSetup(os.Stdout)
 
-	// Check which API to use
-	api, err := checkAPI(baseURL, token, namespace, project)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval), api)
-
 	// Validate baseURL scheme
 	URL, err := validateBaseURLScheme(baseURL)
 	if err != nil {
 		logger.Println(err)
 	}
+
+	// Check which API to use
+	api, err := checkAPI(URL, token, namespace, project)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval), api)
+
 	// Calling getProjectID
 	var newBaseURL, projectID string
 	switch {
