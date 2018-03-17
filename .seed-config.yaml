@@ -3,7 +3,7 @@ project:
   state: "unstable"
   image: ""
   website: ""
-  oneLiner: "Daily milestone generation for Gitlab"
+  oneLiner: "Daily/Weekly/Monthly milestone generation for Gitlab"
   description: |
     Generate one milestone per day\week\month within your Gitlab project.
     Use for your Gitlab based ToDo list or sprints.
