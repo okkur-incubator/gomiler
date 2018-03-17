@@ -17,8 +17,8 @@ _2017_
 -->
 
 # v0.1.0
-_2017-01-01_
-  - [Downloads for v0.1.0](#downloads-for-v010)
+_2018-03-13_
+  - [Downloads for v0.1.0](https://github.com/okkur/dailymile/releases/tag/v0.1.0)
   - [Changelog since v0.0.0](#changes-since-v000)
   - [Documentation for v0.1.0](#documentation-for-v010)
 
@@ -33,7 +33,6 @@ file | sha1 hash | md5 hash
 
 
 ## Changes since v0.0.0
-  - Added Support For Weekly and Monthly Milestones
-
-## Fixes since v0.0.0
-  - Fix 123
+  - Gitlab support
+  - Daily, weekly and monthly milestone generation
+  - Base files via reposeed
