@@ -12,7 +12,10 @@ Use for your Gitlab based ToDo list or sprints.
 ## Using Dailymile
 ```
 git clone https://github.com/okkur/dailymile.git
-cd dailymile
+go get -u github.com/peterhellberg/link
+
+cd dailymile 
+
 go build main.go
 ./daily_milestone -advance=10 -namespace=gitnamespace  -projectname=gitproject -token=123456789 -baseurl=some.thing.eu  -timeinterval=Weekly
 
