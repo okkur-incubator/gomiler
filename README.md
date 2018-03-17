@@ -17,11 +17,11 @@ go get -u github.com/peterhellberg/link
 cd dailymile 
 
 go build main.go
-./daily_milestone -advance=10 -namespace=gitnamespace  -project=gitproject -token=123456789 -url=some.thing.eu  -interval=Weekly
+./daily_milestone -advance=10 -namespace=gitnamespace  -project=gitproject -token=123456789 -url=some.thing.eu  -interval=weekly
 
 or
 
-go run main.go --advance=10 --namespace=gitnamespace  --project=gitproject --token=123456789 --url=some.thing.eu  --interval=Weekly
+go run main.go --advance=10 --namespace=gitnamespace  --project=gitproject --token=123456789 --url=some.thing.eu  --interval=weekly
 flags:
 
 advance: Define timeframe
