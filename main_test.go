@@ -58,7 +58,7 @@ func TestGetProjectID(t *testing.T) {
 	httpmock.RegisterResponder("GET", "https://gitlab.com/api/v4/projects/",
 		httpmock.NewStringResponder(200, string(jsonStruct)))
 
-	res, err := getProjectID(mockURL, "213123", "test", "test")
+	res, err := getProjectID(mockURL, "213123", "test", "test", "gitlab")
 
 	if res != "1" && err != nil {
 		t.Errorf("Expected %s, got %s", "1", res)
@@ -66,7 +66,7 @@ func TestGetProjectID(t *testing.T) {
 }
 
 func TestCreateMilestoneDataDaily(t *testing.T) {
-	milestones := createMilestoneData(30, "daily")
+	milestones := createMilestoneData(30, "daily", "gitlab")
 	today := time.Now().Local().Format("2006-01-02")
 	if milestones[today].DueDate != today {
 		t.Errorf("Expected %s, got %s", today, milestones[today].DueDate)
@@ -74,7 +74,7 @@ func TestCreateMilestoneDataDaily(t *testing.T) {
 }
 
 func TestCreateMilestoneDataWeekly(t *testing.T) {
-	milestones := createMilestoneData(20, "weekly")
+	milestones := createMilestoneData(20, "weekly", "gitlab")
 	today := time.Now().Local()
 	lastDay := lastDayWeek(today)
 	year, week := lastDay.ISOWeek()
@@ -86,7 +86,7 @@ func TestCreateMilestoneDataWeekly(t *testing.T) {
 }
 
 func TestCreateMilestoneDataMonthly(t *testing.T) {
-	milestones := createMilestoneData(2, "monthly")
+	milestones := createMilestoneData(2, "monthly", "gitlab")
 	currentMonth := time.Now().Local().Format("2006-01")
 	expected := lastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format("2006-01-02")
 	if milestones[currentMonth].DueDate != expected {
