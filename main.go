@@ -220,7 +220,6 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 		// Check for returned error messages
 		if p.Name == "message" {
 			return "", fmt.Errorf("api returned error %s", "error")
-			// TODO: give back error/message returned by api
 		}
 		if p.Name == projectname && p.NameSpace.Path == namespace {
 			return strconv.Itoa(p.ID), nil
@@ -578,7 +577,6 @@ func main() {
 		projectID, err = getProjectID(newBaseURL, token, project, namespace, api)
 		if err != nil {
 			logger.Fatal(err)
-			// TODO: check for authentication error (currently it only says project not found)
 		}
 		err = createAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData, api)
 		if err != nil {
