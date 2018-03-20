@@ -278,8 +278,6 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 			}
 			defer resp.Body.Close()
 		case api == "github":
-			params := url.Values{}
-			params.Set("state", "open")
 			create := struct {
 				State string `json:"state"`
 			}{
@@ -426,7 +424,6 @@ func createMilestones(baseURL string, token string, projectID string, milestones
 			}
 			req.Header.Add("PRIVATE-TOKEN", token)
 		case api == "github":
-			params.Set("due_on", v.DueDate)
 			create := struct {
 				Title   string `json:"title"`
 				DueDate string `json:"due_on"`
