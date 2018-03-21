@@ -363,10 +363,8 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
 			switch {
 			case api == "gitlab":
-				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
 				dueDate = lastDay.Format("2006-01-02")
 			case api == "github":
-				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
 				dueDate = lastDay.Format(time.RFC3339)
 			}
 			m.Title = title
@@ -383,10 +381,8 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 			title := date.Format("2006-01")
 			switch {
 			case api == "gitlab":
-				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
 				dueDate = lastDay.Format("2006-01-02")
 			case api == "github":
-				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
 				dueDate = lastDay.Format(time.RFC3339)
 			}
 			m.Title = title
