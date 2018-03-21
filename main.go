@@ -242,22 +242,22 @@ func getActiveMilestones(baseURL string, token string, projectID string, api str
 }
 
 // Get and return inactive milestones
-func getInactiveMilestones(baseURL string, token string, projectID string, api string) ([]milestoneAPI, error) {
+func getInactiveMilestones(baseURL string, token string, project string, api string) ([]milestoneAPI, error) {
 	state := "closed"
-	return getMilestones(baseURL, token, projectID, state, api)
+	return getMilestones(baseURL, token, project, state, api)
 }
 
-func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, projectID string, api string) error {
+func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, project string, api string) error {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {
 		switch {
 		case api == "gitlab":
 			milestoneID := v.ID
-			strURL = []string{baseURL, "/projects/", projectID, "/milestones/", milestoneID}
+			strURL = []string{baseURL, "/projects/", project, "/milestones/", milestoneID}
 		case api == "github":
 			milestoneID := strconv.Itoa(v.Number)
-			strURL = []string{baseURL, "/milestones/", milestoneID}
+			strURL = []string{baseURL, project, "/milestones/", milestoneID}
 		}
 		URL := strings.Join(strURL, "")
 		switch {
@@ -304,15 +304,15 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 	return nil
 }
 
-func getMilestones(baseURL string, token string, projectID string, state string, api string) ([]milestoneAPI, error) {
+func getMilestones(baseURL string, token string, project string, state string, api string) ([]milestoneAPI, error) {
 	var strURL []string
 	var URL, newURL string
 	var apiData [][]byte
 	switch {
 	case api == "gitlab":
-		strURL = []string{baseURL, "/projects/", projectID, "/milestones"}
+		strURL = []string{baseURL, "/projects/", project, "/milestones"}
 	case api == "github":
-		strURL = []string{baseURL, "/milestones"}
+		strURL = []string{baseURL, project, "/milestones"}
 	}
 	URL = strings.Join(strURL, "")
 	u, _ := url.Parse(URL)
@@ -401,14 +401,14 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 	return milestones
 }
 
-func createMilestones(baseURL string, token string, projectID string, milestones map[string]milestone, api string) error {
+func createMilestones(baseURL string, token string, project string, milestones map[string]milestone, api string) error {
 	client := &http.Client{}
 	var strURL []string
 	switch {
 	case api == "gitlab":
-		strURL = []string{baseURL, "/projects/", projectID, "/milestones"}
+		strURL = []string{baseURL, "/projects/", project, "/milestones"}
 	case api == "github":
-		strURL = []string{baseURL, "/milestones"}
+		strURL = []string{baseURL, project, "/milestones"}
 	}
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
@@ -588,16 +588,16 @@ func main() {
 			logger.Println(err)
 		}
 	case api == "github":
-		newBaseURL = URL + "/repos/" + namespace + "/" + project
-		err = createAndDisplayNewMilestones(newBaseURL, token, "", milestoneData, api)
+		newBaseURL = URL + "/repos/" + namespace + "/"
+		err = createAndDisplayNewMilestones(newBaseURL, token, project, milestoneData, api)
 		if err != nil {
 			logger.Println(err)
 		}
-		editMilestones, err := getClosedMilestones(newBaseURL, token, "", milestoneData, api)
+		editMilestones, err := getClosedMilestones(newBaseURL, token, project, milestoneData, api)
 		if err != nil {
 			logger.Println(err)
 		}
-		err = reactivateClosedMilestones(editMilestones, newBaseURL, token, "", api)
+		err = reactivateClosedMilestones(editMilestones, newBaseURL, token, project, api)
 		if err != nil {
 			logger.Println(err)
 		}
