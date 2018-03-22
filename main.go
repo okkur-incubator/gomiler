@@ -318,11 +318,11 @@ func getMilestones(baseURL string, token string, project string, state string, a
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func createMilestoneData(advance int, timeInterval string, api string) map[string]milestone {
+func createMilestoneData(advance int, interval string, api string) map[string]milestone {
 	today := time.Now().Local()
 	milestones := map[string]milestone{}
 	switch {
-	case timeInterval == "daily":
+	case interval == "daily":
 		for i := 0; i < advance; i++ {
 			var m milestone
 			var dueDate string
@@ -337,7 +337,7 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 			m.DueDate = dueDate
 			milestones[title] = m
 		}
-	case timeInterval == "weekly":
+	case interval == "weekly":
 		for i := 0; i < advance; i++ {
 			var m milestone
 			var dueDate string
@@ -355,7 +355,7 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 			milestones[title] = m
 			today = lastDay.AddDate(0, 0, 7)
 		}
-	case timeInterval == "monthly":
+	case interval == "monthly":
 		for i := 0; i < advance; i++ {
 			var m milestone
 			var dueDate string
@@ -373,7 +373,7 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 			milestones[title] = m
 		}
 	default:
-		logger.Println("Error: Not Correct TimeInterval")
+		logger.Println("Error: Incorrect interval")
 		return milestones
 	}
 
@@ -518,12 +518,12 @@ func validateBaseURLScheme(baseURL string) (string, error) {
 
 func main() {
 	// Declaring variables for flags
-	var token, baseURL, namespace, project, timeInterval string
+	var token, baseURL, namespace, project, interval string
 	var advance int
 	// Command Line Parsing Starts
 	flag.StringVar(&token, "token", "jGWPwqQUuf37b", "GitLab or GitHub API key/token")
-	flag.StringVar(&timeInterval, "time-interval", "daily", "Set milestone to daily, weekly or monthly")
-	flag.StringVar(&baseURL, "base-url", "dev.example.com", "GitLab or GitHub API base URL")
+	flag.StringVar(&interval, "interval", "daily", "Set milestone to daily, weekly or monthly")
+	flag.StringVar(&baseURL, "url", "dev.example.com", "GitLab or GitHub API base URL")
 	flag.StringVar(&namespace, "namespace", "someNamespace", "Namespace to use in GitLab or GitHub")
 	flag.StringVar(&project, "project", "someProject", "Project to use in GitLab or GitHub")
 	flag.IntVar(&advance, "advance", 30, "Define timeframe to generate milestones in advance")
@@ -543,7 +543,7 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	milestoneData := createMilestoneData(advance, strings.ToLower(timeInterval), api)
+	milestoneData := createMilestoneData(advance, strings.ToLower(interval), api)
 
 	// Calling getProjectID
 	var newBaseURL, projectID string
