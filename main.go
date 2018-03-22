@@ -402,6 +402,11 @@ func createMilestones(baseURL string, token string, project string, milestones m
 				return err
 			}
 			req.Header.Add("PRIVATE-TOKEN", token)
+			resp, err := client.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
 		case api == "github":
 			create := struct {
 				Title   string `json:"title"`
@@ -420,12 +425,12 @@ func createMilestones(baseURL string, token string, project string, milestones m
 			}
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
+			resp, err := client.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
 		}
-		resp, err := client.Do(req)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
 	}
 
 	return nil
