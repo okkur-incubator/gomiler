@@ -494,15 +494,15 @@ func getClosedMilestones(baseURL string, token string, projectID string, milesto
 	}
 	closedMilestones := createMilestoneMap(closedMilestonesAPI, api)
 	// copy map of closed milestones
-	editMilestones := map[string]milestone{}
+	milestones := map[string]milestone{}
 	for k := range milestoneData {
 		for ek, ev := range closedMilestones {
 			if k == ek {
-				editMilestones[ek] = ev
+				milestones[ek] = ev
 			}
 		}
 	}
-	return editMilestones, nil
+	return milestones, nil
 }
 
 func validateBaseURLScheme(baseURL string) (string, error) {
@@ -558,11 +558,11 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		editMilestones, err := getClosedMilestones(newBaseURL, token, projectID, milestoneData, api)
+		closedMilestones, err := getClosedMilestones(newBaseURL, token, projectID, milestoneData, api)
 		if err != nil {
 			logger.Println(err)
 		}
-		err = reactivateClosedMilestones(editMilestones, newBaseURL, token, projectID, api)
+		err = reactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID, api)
 		if err != nil {
 			logger.Println(err)
 		}
@@ -572,11 +572,11 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		editMilestones, err := getClosedMilestones(newBaseURL, token, project, milestoneData, api)
+		closedMilestones, err := getClosedMilestones(newBaseURL, token, project, milestoneData, api)
 		if err != nil {
 			logger.Println(err)
 		}
-		err = reactivateClosedMilestones(editMilestones, newBaseURL, token, project, api)
+		err = reactivateClosedMilestones(closedMilestones, newBaseURL, token, project, api)
 		if err != nil {
 			logger.Println(err)
 		}
