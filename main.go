@@ -325,14 +325,13 @@ func createMilestoneData(advance int, timeInterval string, api string) map[strin
 	case timeInterval == "daily":
 		for i := 0; i < advance; i++ {
 			var m milestone
-			var dueDate, title string
+			var dueDate string
+			title := today.AddDate(0, 0, i).Format("2006-01-02")
 			switch {
 			case api == "gitlab":
 				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
-				title = dueDate
 			case api == "github":
 				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
-				title = today.AddDate(0, 0, i).Format("2006-01-02")
 			}
 			m.Title = title
 			m.DueDate = dueDate
