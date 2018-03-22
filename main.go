@@ -58,7 +58,7 @@ type milestoneAPI struct {
 }
 
 // Struct for GitLab API
-type gitLabAPI struct {
+type gitlabAPI struct {
 	ID          int        `json:"id"`
 	Iid         int        `json:"iid"`
 	ProjectID   int        `json:"project_id"`
@@ -77,20 +77,6 @@ type gitLabAPI struct {
 		Kind     string `json:"kind"`
 		FullPath string `json:"full_path"`
 	} `json:"namespace"`
-}
-
-// Struct for GitHub API
-type gitHubAPI struct {
-	URL         string     `json:"url"`
-	ID          int        `json:"id"`
-	Name        string     `json:"name"`
-	Number      int        `json:"number"`
-	State       string     `json:"state"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	CreatedAt   *time.Time `json:"created_at"`
-	UpdatedAt   *time.Time `json:"updated_at"`
-	DueDate     string     `json:"due_on"`
 }
 
 // Initialization of logging variable
@@ -210,8 +196,8 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	if err != nil {
 		return "", err
 	}
-	projects := []gitLabAPI{}
-	tmpM := []gitLabAPI{}
+	projects := []gitlabAPI{}
+	tmpM := []gitlabAPI{}
 	for _, v := range apiData {
 		json.Unmarshal(v, &tmpM)
 		projects = append(projects, tmpM...)
