@@ -262,16 +262,16 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 			}
 			defer resp.Body.Close()
 		case api == "github":
-			create := struct {
+			updatePatch := struct {
 				State string `json:"state"`
 			}{
 				State: "open",
 			}
-			createBytes, err := json.Marshal(create)
+			updatePatchBytes, err := json.Marshal(updatePatch)
 			if err != nil {
 				return err
 			}
-			req, err := http.NewRequest("PATCH", URL, bytes.NewReader(createBytes))
+			req, err := http.NewRequest("PATCH", URL, bytes.NewReader(updatePatchBytes))
 			if err != nil {
 				return err
 			}
