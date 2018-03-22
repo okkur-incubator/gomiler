@@ -88,13 +88,11 @@ func LoggerSetup(info io.Writer) {
 }
 
 func checkAPI(baseURL string, token string, namespace string, project string) (string, error) {
-	gitlab := "gitlab"
-	github := "github"
 	gitlabURL := baseURL + "/api/v4/version"
 	githubURL := baseURL + "/repos/" + namespace + "/" + project
 	m := map[string]string{
-		gitlab: gitlabURL,
-		github: githubURL,
+		"gitlab": gitlabURL,
+		"github": githubURL,
 	}
 	client := &http.Client{}
 	for k, v := range m {
@@ -102,10 +100,10 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		if err != nil {
 			return "", err
 		}
-		if k == gitlab {
+		if k == "gitlab" {
 			req.Header.Add("PRIVATE-TOKEN", token)
 		}
-		if k == github {
+		if k == "github" {
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
