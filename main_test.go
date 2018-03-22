@@ -44,7 +44,7 @@ func TestGetProjectID(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockURL := "https://" + "gitlab.com" + "/api/v4"
-	projects := [1]gitLabAPI{}
+	projects := [1]gitlabAPI{}
 
 	projects[0].Name = "test"
 	projects[0].NameSpace.Path = "test"
