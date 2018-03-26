@@ -100,10 +100,10 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		if err != nil {
 			return "", err
 		}
-		if k == "gitlab" {
+		switch k {
+		case "gitlab":
 			req.Header.Add("PRIVATE-TOKEN", token)
-		}
-		if k == "github" {
+		case "github":
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
