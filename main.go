@@ -146,10 +146,10 @@ func paginate(URL string, token string, api string) ([][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		switch {
-		case api == "gitlab":
+		switch api {
+		case "gitlab":
 			req.Header.Add("PRIVATE-TOKEN", token)
-		case api == "github":
+		case "github":
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
@@ -216,10 +216,10 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 // Get and return currently active milestones
 func getActiveMilestones(baseURL string, token string, projectID string, api string) ([]milestoneAPI, error) {
 	var state string
-	switch {
-	case api == "gitlab":
+	switch api {
+	case "gitlab":
 		state = "active"
-	case api == "github":
+	case "github":
 		state = "open"
 	}
 	return getMilestones(baseURL, token, projectID, state, api)
@@ -235,33 +235,30 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {
-		switch {
-		case api == "gitlab":
+		switch api {
+		case "gitlab":
 			milestoneID := v.ID
 			strURL = []string{baseURL, "/projects/", project, "/milestones/", milestoneID}
-		case api == "github":
+		case "github":
 			milestoneID := strconv.Itoa(v.Number)
 			strURL = []string{baseURL, project, "/milestones/", milestoneID}
 		}
 		URL := strings.Join(strURL, "")
-		switch {
-		case api == "gitlab":
+		var req *http.Request
+		var err error
+		switch api {
+		case "gitlab":
 			// Overwrite state information in URL
 			u, _ := url.Parse(URL)
 			q := u.Query()
 			q.Set("state_event", "activate")
 			u.RawQuery = q.Encode()
-			req, err := http.NewRequest("PUT", u.String(), nil)
+			req, err = http.NewRequest("PUT", u.String(), nil)
 			if err != nil {
 				logger.Println(err)
 			}
 			req.Header.Add("PRIVATE-TOKEN", token)
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
-		case api == "github":
+		case "github":
 			updatePatch := struct {
 				State string `json:"state"`
 			}{
@@ -271,18 +268,18 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 			if err != nil {
 				return err
 			}
-			req, err := http.NewRequest("PATCH", URL, bytes.NewReader(updatePatchBytes))
+			req, err = http.NewRequest("PATCH", URL, bytes.NewReader(updatePatchBytes))
 			if err != nil {
 				return err
 			}
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
 		}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
 	}
 
 	return nil
@@ -292,10 +289,10 @@ func getMilestones(baseURL string, token string, project string, state string, a
 	var strURL []string
 	var URL, newURL string
 	var apiData [][]byte
-	switch {
-	case api == "gitlab":
+	switch api {
+	case "gitlab":
 		strURL = []string{baseURL, "/projects/", project, "/milestones"}
-	case api == "github":
+	case "github":
 		strURL = []string{baseURL, project, "/milestones"}
 	}
 	URL = strings.Join(strURL, "")
@@ -321,33 +318,33 @@ func getMilestones(baseURL string, token string, project string, state string, a
 func createMilestoneData(advance int, interval string, api string) map[string]milestone {
 	today := time.Now().Local()
 	milestones := map[string]milestone{}
-	switch {
-	case interval == "daily":
+	switch interval {
+	case "daily":
 		for i := 0; i < advance; i++ {
 			var m milestone
 			var dueDate string
 			title := today.AddDate(0, 0, i).Format("2006-01-02")
-			switch {
-			case api == "gitlab":
+			switch api {
+			case "gitlab":
 				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
-			case api == "github":
+			case "github":
 				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
 			}
 			m.Title = title
 			m.DueDate = dueDate
 			milestones[title] = m
 		}
-	case interval == "weekly":
+	case "weekly":
 		for i := 0; i < advance; i++ {
 			var m milestone
 			var dueDate string
 			lastDay := lastDayWeek(today)
 			year, week := lastDay.ISOWeek()
 			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-			switch {
-			case api == "gitlab":
+			switch api {
+			case "gitlab":
 				dueDate = lastDay.Format("2006-01-02")
-			case api == "github":
+			case "github":
 				dueDate = lastDay.Format(time.RFC3339)
 			}
 			m.Title = title
@@ -355,17 +352,17 @@ func createMilestoneData(advance int, interval string, api string) map[string]mi
 			milestones[title] = m
 			today = lastDay.AddDate(0, 0, 7)
 		}
-	case interval == "monthly":
+	case "monthly":
 		for i := 0; i < advance; i++ {
 			var m milestone
 			var dueDate string
 			date := today.AddDate(0, i, 0)
 			lastDay := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
 			title := date.Format("2006-01")
-			switch {
-			case api == "gitlab":
+			switch api {
+			case "gitlab":
 				dueDate = lastDay.Format("2006-01-02")
-			case api == "github":
+			case "github":
 				dueDate = lastDay.Format(time.RFC3339)
 			}
 			m.Title = title
@@ -383,31 +380,27 @@ func createMilestoneData(advance int, interval string, api string) map[string]mi
 func createMilestones(baseURL string, token string, project string, milestones map[string]milestone, api string) error {
 	client := &http.Client{}
 	var strURL []string
-	switch {
-	case api == "gitlab":
+	switch api {
+	case "gitlab":
 		strURL = []string{baseURL, "/projects/", project, "/milestones"}
-	case api == "github":
+	case "github":
 		strURL = []string{baseURL, project, "/milestones"}
 	}
 	URL := strings.Join(strURL, "")
 	params := url.Values{}
 	for _, v := range milestones {
 		var req *http.Request
-		switch {
-		case api == "gitlab":
+		var err error
+		switch api {
+		case "gitlab":
 			params.Set("dueDate", v.DueDate)
 			params.Set("title", v.Title)
-			req, err := http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
+			req, err = http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
 			if err != nil {
 				return err
 			}
 			req.Header.Add("PRIVATE-TOKEN", token)
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
-		case api == "github":
+		case "github":
 			create := struct {
 				Title   string `json:"title"`
 				DueDate string `json:"due_on"`
@@ -425,12 +418,12 @@ func createMilestones(baseURL string, token string, project string, milestones m
 			}
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
 		}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
 	}
 
 	return nil
@@ -552,8 +545,8 @@ func main() {
 
 	// Calling getProjectID
 	var newBaseURL, projectID string
-	switch {
-	case api == "gitlab":
+	switch api {
+	case "gitlab":
 		newBaseURL = URL + "/api/v4"
 		projectID, err = getProjectID(newBaseURL, token, project, namespace, api)
 		if err != nil {
@@ -571,7 +564,7 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-	case api == "github":
+	case "github":
 		newBaseURL = URL + "/repos/" + namespace + "/"
 		err = createAndDisplayNewMilestones(newBaseURL, token, project, milestoneData, api)
 		if err != nil {
