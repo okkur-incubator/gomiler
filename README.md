@@ -2,9 +2,9 @@
 
 Easy milestone creation for your favorite project tracking website
 
- [![state](https://img.shields.io/badge/state-unstable-blue.svg)]()
- [![release](https://img.shields.io/github/release/okkur/dailymile.svg)](https://github.com/okkur/dailymile/releases)
- [![license](https://img.shields.io/github/license/okkur/dailymile.svg)](LICENSE)
+ [![state](https://img.shields.io/badge/state-unstable-blue.svg)]() 
+ [![release](https://img.shields.io/github/release/okkur/gomiler.svg)](https://github.com/okkur/gomiler/releases) 
+ [![license](https://img.shields.io/github/license/okkur/gomiler.svg)](LICENSE)
 
 **NOTE: This is a work-in-progress, we do not consider it production ready. Use at your own risk.**
 
@@ -23,11 +23,9 @@ for more information about flags:
 
 
 ## Support
-
 For detailed information on support options see our [support guide](/SUPPORT.md).
 
 ## Helping out
-
 Best place to start is our [contribution guide](/CONTRIBUTING.md).
 
 ----
@@ -36,7 +34,7 @@ Best place to start is our [contribution guide](/CONTRIBUTING.md).
 *Documentation/examples are licensed under [Creative Commons BY-SA 4.0](/docs/LICENSE).*  
 *Illustrations, trademarks and third-party resources are owned by their respective party and are subject to different licensing.*
 
----
+----
 
 Copyright 2017 - The GoMiler Authors
 

@@ -1,7 +1,7 @@
 <!--
 # v0.2.0
 _2017_
-  - [Downloads for v0.2.0](#downloads-for-v020)
+  - [Downloads for v0.2.0](https://github.com/okkur/gomiler/releases/tag/v0.1.0)
   - [Changelog since v0.1.0](#changes-since-v010)
   - [Documentation for v0.2.0](#documentation-for-v020)
 
@@ -18,7 +18,7 @@ _2017_
 
 # v0.1.0
 _2017-01-01_
-  - [Downloads for v0.1.0](#downloads-for-v010)
+  - [Downloads for v0.1.0](https://github.com/okkur/gomiler/releases/tag/v0.1.0)
   - [Changelog since v0.0.0](#changes-since-v000)
   - [Documentation for v0.1.0](#documentation-for-v010)
 
@@ -33,8 +33,9 @@ file | sha1 hash | md5 hash
 
 
 ## Changes since v0.0.0
-  - Feature X
-  - Feature Z
+  - Gitlab support
+  - Daily, weekly and monthly milestone generation
+  - Base files via reposeed
 
 ## Fixes since v0.0.0
-  - Fix 123
+  - Pagination

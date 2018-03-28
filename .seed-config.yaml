@@ -28,7 +28,7 @@ readme:
     
 contributionLinks:
   issueTemplate: "/.github/ISSUE_TEMPLATE.md"
-  starterIssues: "https://github.com/okkur/dailymile/labels/starter%20issue" # replace dear-github with your actual url
+  starterIssues: "https://github.com/okkur/gomiler/labels/starter%20issue" # replace dear-github with your actual url
 
 emails:
   commercialSupport: "support@okkur.io"
@@ -52,15 +52,15 @@ maintainers:
     nick: "erbesharat"    
 
 repo:
-  link: "https://github.com/okkur/dailymile/"
+  link: "https://github.com/okkur/gomiler/"
   type: "Github"
 
 badges:
   - image: "https://img.shields.io/badge/state-unstable-blue.svg"
     alt: "state"
-  - image: "https://img.shields.io/github/release/okkur/dailymile.svg"
-    link: "https://github.com/okkur/dailymile/releases"
+  - image: "https://img.shields.io/github/release/okkur/gomiler.svg"
+    link: "https://github.com/okkur/gomiler/releases"
     alt: "release"
-  - image: "https://img.shields.io/github/license/okkur/dailymile.svg"
+  - image: "https://img.shields.io/github/license/okkur/gomiler.svg"
     link: "LICENSE"
-alt: "license"
+    alt: "license"
