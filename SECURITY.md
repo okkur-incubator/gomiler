@@ -12,5 +12,5 @@ If you want we will publicly acknowledge your responsible disclosure.
 We also try to make the issue public after the vulnerability is announced.
 Usually bug reports are made public after 30 days, if possible.
 
-You are not allowed to search for security vulnerabilities on any hosted service of Dailymile without the consent of the party hosting it.
-Dailymile is open source software and can be installed for testing and security issues on your own infrastructure.
+You are not allowed to search for security vulnerabilities on any hosted service of GoMiler without the consent of the party hosting it.
+GoMiler is open source software and can be installed for testing and security issues on your own infrastructure.

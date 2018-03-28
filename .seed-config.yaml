@@ -1,13 +1,13 @@
 project:
-  name: "Dailymile"
+  name: "GoMiler"
   state: "unstable"
   image: ""
   website: ""
-  oneLiner: "Daily milestone generation for Gitlab"
+  oneLiner: "Easy milestone creation for your favorite project tracking website"
   description: |
     Generate one milestone per day\week\month within your Gitlab project.
     Use for your Gitlab based ToDo list or sprints.
-  version: "v0.0.0"
+  version: "v0.1.0"
   mainLicense: "apache2"
   docsLicense: "CCBySa"
 
@@ -15,7 +15,17 @@ vision:
   type: "community"
   overview: |
     Simple daily milestone generation for Gitlab.
+readme:
+  usageExample: |
+  
+    go get -u -v https://github.com/okkur/gomiler/...
 
+    gomiler -namespace=yournamespace  -project=yourproject -token=123456789 -url=devhub.example.com
+    
+    for more information about flags:
+      
+      gomiler --help
+    
 contributionLinks:
   issueTemplate: "/.github/ISSUE_TEMPLATE.md"
   starterIssues: "https://github.com/okkur/dailymile/labels/starter%20issue" # replace dear-github with your actual url
@@ -36,6 +46,10 @@ maintainers:
     nick: "adeilh"
   - name: "Michael Grosser"
     nick: "stp-ip"
+  - name: "David Riesz"
+    nick: "dbriesz"
+  - name: "Erfan Besharat"
+    nick: "erbesharat"    
 
 repo:
   link: "https://github.com/okkur/dailymile/"
@@ -49,4 +63,4 @@ badges:
     alt: "release"
   - image: "https://img.shields.io/github/license/okkur/dailymile.svg"
     link: "LICENSE"
-    alt: "license"
+alt: "license"
