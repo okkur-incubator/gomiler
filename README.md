@@ -2,7 +2,9 @@
 
 Easy milestone creation for your favorite project tracking website
 
- [![state](https://img.shields.io/badge/state-unstable-blue.svg)]() [![release](https://img.shields.io/github/release/okkur/dailymile.svg)](https://github.com/okkur/dailymile/releases)[![license](https://img.shields.io/github/license/okkur/dailymile.svg)](LICENSE)
+ [![state](https://img.shields.io/badge/state-unstable-blue.svg)]() 
+ [![release](https://img.shields.io/github/release/okkur/dailymile.svg)](https://github.com/okkur/dailymile/releases)
+ [![license](https://img.shields.io/github/license/okkur/dailymile.svg)](LICENSE)
 
 **NOTE: This is a work-in-progress, we do not consider it production ready. Use at your own risk.**
 
