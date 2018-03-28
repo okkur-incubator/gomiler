@@ -14,5 +14,5 @@ bug | feature
 **Anything else we need to know?**:
 
 **Environment**:
-- Dailymile version:  
+- GoMiler version:  
 - Others:

@@ -1,5 +1,5 @@
 <!--
-Copyright 2017 - The Dailymile Authors
+Copyright 2017 - The GoMiler Authors
 
 This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License;
 you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+
+## Development
 # Documentation
 
 No documentation available yet. Start your first contribution with some documentation.
