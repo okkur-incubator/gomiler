@@ -374,12 +374,16 @@ func createAndDisplayNewMilestones(baseURL string, token string,
 		return err
 	}
 	gitlabMilestones := []gitlabAPI{}
+	githubMilestones := []githubAPI{}
 	activeMilestones := map[string]milestone{}
 	var g GoMiler
 	switch api {
 	case "gitlab":
 		gitlabMilestones = (*GoMiler).getGitlabMilestones(&g, activeMilestonesAPI)
 		activeMilestones = (*GoMiler).createGitlabMilestoneMap(&g, gitlabMilestones, api)
+	case "github":
+		githubMilestones = (*GoMiler).getGithubMilestones(&g, activeMilestonesAPI)
+		activeMilestones = (*GoMiler).createGithubMilestoneMap(&g, githubMilestones, api)
 	}
 	// copy map of active milestones
 	newMilestones := map[string]milestone{}
@@ -419,11 +423,15 @@ func getClosedMilestones(baseURL string, token string, projectID string, milesto
 		return nil, err
 	}
 	closedGitlabMilestones := map[string]milestone{}
+	closedGithubMilestones := map[string]milestone{}
 	var g GoMiler
 	switch api {
 	case "gitlab":
 		gitlabMilestones := (*GoMiler).getGitlabMilestones(&g, closedMilestonesAPI)
 		closedGitlabMilestones = (*GoMiler).createGitlabMilestoneMap(&g, gitlabMilestones, api)
+	case "github":
+		githubMilestones := (*GoMiler).getGithubMilestones(&g, closedMilestonesAPI)
+		closedGithubMilestones = (*GoMiler).createGithubMilestoneMap(&g, githubMilestones, api)
 	}
 	// copy map of closed milestones
 	milestones := map[string]milestone{}
@@ -431,6 +439,12 @@ func getClosedMilestones(baseURL string, token string, projectID string, milesto
 		switch api {
 		case "gitlab":
 			for ek, ev := range closedGitlabMilestones {
+				if k == ek {
+					milestones[ek] = ev
+				}
+			}
+		case "github":
+			for ek, ev := range closedGithubMilestones {
 				if k == ek {
 					milestones[ek] = ev
 				}
