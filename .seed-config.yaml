@@ -22,7 +22,7 @@ readme:
     ```
 
     For more information about flags:      
-    ```gomiler --help```
+      ```gomiler --help```
 
 contributionLinks:
   issueTemplate: "/.github/ISSUE_TEMPLATE.md"
