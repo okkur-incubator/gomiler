@@ -11,7 +11,7 @@ Generate milestone for ToDo lists, sprints or more.
 ## Using GoMiler
 ```
 go get -u -v https://github.com/okkur/gomiler/...
-gomiler -namespace=yournamespace  -project=yourproject -token=123456789 -url=devhub.example.com
+gomiler -namespace=YOUR-NAMESPACE  -project=YOUR-PROJECT -token=123456789 -url=devhub.example.com
 ```
 
 For more information about flags:      
