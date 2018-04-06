@@ -13,7 +13,7 @@ project:
 vision:
   type: "community"
   overview: |
-    Simple daily milestone generation for Gitlab.
+    Milestone generation for platforms including GitLab and GitHub.
 readme:
   usageExample: |
     ```
@@ -21,13 +21,12 @@ readme:
     gomiler -namespace=yournamespace  -project=yourproject -token=123456789 -url=devhub.example.com
     ```
 
-    For more information about flags:
-      
+    For more information about flags:      
     ```gomiler --help```
-    
+
 contributionLinks:
   issueTemplate: "/.github/ISSUE_TEMPLATE.md"
-  starterIssues: "https://github.com/okkur/gomiler/labels/starter%20issue" # replace dear-github with your actual url
+  starterIssues: "https://github.com/okkur/gomiler/labels/starter%20issue"
 
 emails:
   commercialSupport: "support@okkur.io"

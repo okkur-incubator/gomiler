@@ -1,6 +1,6 @@
 # Vision
 GoMiler is a community project. From our current viewpoint, its role is:
-Simple daily milestone generation for Gitlab.
+Milestone generation for platforms including GitLab and GitHub.
 
 
 
