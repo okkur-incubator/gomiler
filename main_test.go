@@ -57,8 +57,8 @@ func TestGetProjectID(t *testing.T) {
 
 	httpmock.RegisterResponder("GET", "https://gitlab.com/api/v4/projects/",
 		httpmock.NewStringResponder(200, string(jsonStruct)))
-
-	res, err := getProjectID(mockURL, "213123", "test", "test", "gitlab")
+	var g GoMiler
+	res, err := (*GoMiler).getProjectID(&g, mockURL, "213123", "test", "test", "gitlab")
 
 	if res != "1" && err != nil {
 		t.Errorf("Expected %s, got %s", "1", res)

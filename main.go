@@ -33,6 +33,12 @@ import (
 	"github.com/peterhellberg/link"
 )
 
+// GoMiler struct to be used as a generic struct for use with multiple APIs
+type GoMiler struct {
+	JSON []byte
+	API  string
+}
+
 // Struct to be used for milestone queries
 type milestone struct {
 	DueDate string
@@ -40,43 +46,6 @@ type milestone struct {
 	Title   string
 	State   string
 	Number  int
-}
-
-// Struct to be used for milestone
-type milestoneAPI struct {
-	ID          int        `json:"id"`
-	Iid         int        `json:"iid"`
-	ProjectID   int        `json:"project_id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	State       string     `json:"state"`
-	CreatedAt   *time.Time `json:"created_at"`
-	UpdatedAt   *time.Time `json:"updated_at"`
-	StartDate   string     `json:"start_date"`
-	DueDate     string     `json:"due_date"`
-	Number      int        `json:"number"`
-}
-
-// Struct for GitLab API
-type gitlabAPI struct {
-	ID          int        `json:"id"`
-	Iid         int        `json:"iid"`
-	ProjectID   int        `json:"project_id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	StartDate   string     `json:"start_date"`
-	DueDate     string     `json:"due_date"`
-	State       string     `json:"state"`
-	UpdatedAt   *time.Time `json:"updated_at"`
-	CreatedAt   *time.Time `json:"created_at"`
-	Name        string     `json:"name"`
-	NameSpace   struct {
-		ID       int    `json:"id"`
-		Name     string `json:"name"`
-		Path     string `json:"path"`
-		Kind     string `json:"kind"`
-		FullPath string `json:"full_path"`
-	} `json:"namespace"`
 }
 
 // Initialization of logging variable
@@ -182,39 +151,8 @@ func paginate(URL string, token string, api string) ([][]byte, error) {
 	return apiData, nil
 }
 
-// Function to get project ID from the gitLabAPI
-func getProjectID(baseURL string, token string, projectname string, namespace string, api string) (string, error) {
-	strURL := []string{baseURL, "/projects/"}
-	URL := strings.Join(strURL, "")
-	u, _ := url.Parse(URL)
-	q := u.Query()
-	q.Set("search", projectname)
-	u.RawQuery = q.Encode()
-	apiData, err := paginate(u.String(), token, api)
-	if err != nil {
-		return "", err
-	}
-	projects := []gitlabAPI{}
-	tmpM := []gitlabAPI{}
-	for _, v := range apiData {
-		json.Unmarshal(v, &tmpM)
-		projects = append(projects, tmpM...)
-	}
-	for _, p := range projects {
-		// Check for returned error messages
-		if p.Name == "message" {
-			return "", fmt.Errorf("api returned error %s", "error")
-		}
-		if p.Name == projectname && p.NameSpace.Path == namespace {
-			return strconv.Itoa(p.ID), nil
-		}
-	}
-
-	return "", fmt.Errorf("project %s not found", projectname)
-}
-
 // Get and return currently active milestones
-func getActiveMilestones(baseURL string, token string, projectID string, api string) ([]milestoneAPI, error) {
+func getActiveMilestones(baseURL string, token string, projectID string, api string) ([]GoMiler, error) {
 	var state string
 	switch api {
 	case "gitlab":
@@ -226,7 +164,7 @@ func getActiveMilestones(baseURL string, token string, projectID string, api str
 }
 
 // Get and return inactive milestones
-func getInactiveMilestones(baseURL string, token string, project string, api string) ([]milestoneAPI, error) {
+func getInactiveMilestones(baseURL string, token string, project string, api string) ([]GoMiler, error) {
 	state := "closed"
 	return getMilestones(baseURL, token, project, state, api)
 }
@@ -285,7 +223,7 @@ func reactivateClosedMilestones(milestones map[string]milestone, baseURL string,
 	return nil
 }
 
-func getMilestones(baseURL string, token string, project string, state string, api string) ([]milestoneAPI, error) {
+func getMilestones(baseURL string, token string, project string, state string, api string) ([]GoMiler, error) {
 	var strURL []string
 	var URL, newURL string
 	var apiData [][]byte
@@ -305,8 +243,8 @@ func getMilestones(baseURL string, token string, project string, state string, a
 	if err != nil {
 		return nil, err
 	}
-	milestones := []milestoneAPI{}
-	tmpM := []milestoneAPI{}
+	milestones := []GoMiler{}
+	tmpM := []GoMiler{}
 	for _, v := range apiData {
 		json.Unmarshal(v, &tmpM)
 		milestones = append(milestones, tmpM...)
@@ -429,30 +367,24 @@ func createMilestones(baseURL string, token string, project string, milestones m
 	return nil
 }
 
-func createMilestoneMap(milestoneAPI []milestoneAPI, api string) map[string]milestone {
-	milestones := map[string]milestone{}
-	for _, v := range milestoneAPI {
-		var m milestone
-		m.DueDate = v.DueDate
-		m.ID = strconv.Itoa(v.ID)
-		m.Title = v.Title
-		if api == "github" {
-			m.State = v.State
-			m.Number = v.Number
-		}
-		milestones[v.Title] = m
-	}
-
-	return milestones
-}
-
 func createAndDisplayNewMilestones(baseURL string, token string,
 	projectID string, milestoneData map[string]milestone, api string) error {
 	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID, api)
 	if err != nil {
 		return err
 	}
-	activeMilestones := createMilestoneMap(activeMilestonesAPI, api)
+	gitlabMilestones := []gitlabAPI{}
+	githubMilestones := []githubAPI{}
+	activeMilestones := map[string]milestone{}
+	var g GoMiler
+	switch api {
+	case "gitlab":
+		gitlabMilestones = (*GoMiler).getGitlabMilestones(&g, activeMilestonesAPI)
+		activeMilestones = (*GoMiler).createGitlabMilestoneMap(&g, gitlabMilestones, api)
+	case "github":
+		githubMilestones = (*GoMiler).getGithubMilestones(&g, activeMilestonesAPI)
+		activeMilestones = (*GoMiler).createGithubMilestoneMap(&g, githubMilestones, api)
+	}
 	// copy map of active milestones
 	newMilestones := map[string]milestone{}
 	for k, v := range milestoneData {
@@ -490,13 +422,32 @@ func getClosedMilestones(baseURL string, token string, projectID string, milesto
 	if err != nil {
 		return nil, err
 	}
-	closedMilestones := createMilestoneMap(closedMilestonesAPI, api)
+	closedGitlabMilestones := map[string]milestone{}
+	closedGithubMilestones := map[string]milestone{}
+	var g GoMiler
+	switch api {
+	case "gitlab":
+		gitlabMilestones := (*GoMiler).getGitlabMilestones(&g, closedMilestonesAPI)
+		closedGitlabMilestones = (*GoMiler).createGitlabMilestoneMap(&g, gitlabMilestones, api)
+	case "github":
+		githubMilestones := (*GoMiler).getGithubMilestones(&g, closedMilestonesAPI)
+		closedGithubMilestones = (*GoMiler).createGithubMilestoneMap(&g, githubMilestones, api)
+	}
 	// copy map of closed milestones
 	milestones := map[string]milestone{}
 	for k := range milestoneData {
-		for ek, ev := range closedMilestones {
-			if k == ek {
-				milestones[ek] = ev
+		switch api {
+		case "gitlab":
+			for ek, ev := range closedGitlabMilestones {
+				if k == ek {
+					milestones[ek] = ev
+				}
+			}
+		case "github":
+			for ek, ev := range closedGithubMilestones {
+				if k == ek {
+					milestones[ek] = ev
+				}
 			}
 		}
 	}
@@ -548,7 +499,8 @@ func main() {
 	switch api {
 	case "gitlab":
 		newBaseURL = URL + "/api/v4"
-		projectID, err = getProjectID(newBaseURL, token, project, namespace, api)
+		var g GoMiler
+		projectID, err = (*GoMiler).getProjectID(&g, newBaseURL, token, project, namespace, api)
 		if err != nil {
 			logger.Fatal(err)
 		}
