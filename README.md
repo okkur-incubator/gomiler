@@ -15,7 +15,9 @@ gomiler -namespace=yournamespace  -project=yourproject -token=123456789 -url=dev
 ```
 
 For more information about flags:      
-  ```gomiler --help```
+```
+gomiler --help
+```
 
 
 ## Support
