@@ -6,7 +6,7 @@ _2018_
   - [Documentation for v0.3.0](#documentation-for-v030)
 
 ## Documentation for v0.3.0
-[Documentation](/tree/v0.3.0/docs)
+[Documentation](/docs)
 
 ## Changes since v0.2.0
   -
@@ -24,7 +24,7 @@ _2018-04-06_
   - [Documentation for v0.2.0](#documentation-for-v020)
 
 ## Documentation for v0.2.0
-[Documentation](/tree/v0.2.0/docs)
+[Documentation](/docs)
 
 ## Changes since v0.1.0
   - Github support
