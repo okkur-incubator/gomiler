@@ -1,7 +1,6 @@
-package main
+package github
 
 import (
-	"encoding/json"
 	"strconv"
 	"time"
 )
@@ -19,17 +18,16 @@ type githubAPI struct {
 	Number      int        `json:"number"`
 }
 
-func (g *GoMiler) getGithubMilestones(gomiler []GoMiler) []githubAPI {
-	milestones := []githubAPI{}
-	tmpM := []githubAPI{}
-	for range gomiler {
-		json.Unmarshal(g.JSON, &tmpM)
-		milestones = append(milestones, tmpM...)
-	}
-	return milestones
+// Struct to be used for milestone queries
+type milestone struct {
+	DueDate string
+	ID      string
+	Title   string
+	State   string
+	Number  int
 }
 
-func (g *GoMiler) createGithubMilestoneMap(githubAPI []githubAPI, api string) map[string]milestone {
+func createGithubMilestoneMap(githubAPI []githubAPI, api string) map[string]milestone {
 	milestones := map[string]milestone{}
 	for _, v := range githubAPI {
 		var m milestone

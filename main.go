@@ -19,6 +19,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	github "github.com/okkur/gomiler/github"
+	"github.com/peterhellberg/link"
+	gitlab "github.com/okkur/gomiler/gitlab"
 	"io"
 	"io/ioutil"
 	"log"
@@ -29,23 +32,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/peterhellberg/link"
 )
 
 // GoMiler struct to be used as a generic struct for use with multiple APIs
 type GoMiler struct {
 	JSON []byte
 	API  string
-}
-
-// Struct to be used for milestone queries
-type milestone struct {
-	DueDate string
-	ID      string
-	Title   string
-	State   string
-	Number  int
 }
 
 // Initialization of logging variable
@@ -493,7 +485,7 @@ func main() {
 		logger.Fatal(err)
 	}
 	milestoneData := createMilestoneData(advance, strings.ToLower(interval), api)
-
+	
 	// Calling getProjectID
 	var newBaseURL, projectID string
 	switch api {

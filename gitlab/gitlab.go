@@ -1,4 +1,4 @@
-package main
+package gitlab
 
 import (
 	"encoding/json"
@@ -31,8 +31,17 @@ type gitlabAPI struct {
 	} `json:"namespace"`
 }
 
+// Struct to be used for milestone queries
+type milestone struct {
+	DueDate string
+	ID      string
+	Title   string
+	State   string
+	Number  int
+}
+
 // Function to get project ID from the gitLabAPI
-func (g *GoMiler) getProjectID(baseURL string, token string, projectname string, namespace string, api string) (string, error) {
+func getProjectID(baseURL string, token string, projectname string, namespace string, api string) (string, error) {
 	strURL := []string{baseURL, "/projects/"}
 	URL := strings.Join(strURL, "")
 	u, _ := url.Parse(URL)
@@ -62,17 +71,7 @@ func (g *GoMiler) getProjectID(baseURL string, token string, projectname string,
 	return "", fmt.Errorf("project %s not found", projectname)
 }
 
-func (g *GoMiler) getGitlabMilestones(gomiler []GoMiler) []gitlabAPI {
-	milestones := []gitlabAPI{}
-	tmpM := []gitlabAPI{}
-	for range gomiler {
-		json.Unmarshal(g.JSON, &tmpM)
-		milestones = append(milestones, tmpM...)
-	}
-	return milestones
-}
-
-func (g *GoMiler) createGitlabMilestoneMap(gitlabAPI []gitlabAPI, api string) map[string]milestone {
+func createGitlabMilestoneMap(gitlabAPI []gitlabAPI, api string) map[string]milestone {
 	milestones := map[string]milestone{}
 	for _, v := range gitlabAPI {
 		var m milestone
