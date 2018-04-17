@@ -80,14 +80,14 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 	return "", fmt.Errorf("Error: could not access GitLab or GitHub APIs")
 }
 
-// Function to get last day of the month
-func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
+// LastDayMonth function gets last day of the month
+func LastDayMonth(year int, month int, timezone *time.Location) time.Time {
 	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
 	return t
 }
 
-// last day of week
-func lastDayWeek(lastDay time.Time) time.Time {
+// LastDayWeek function gets last day of the week
+func LastDayWeek(lastDay time.Time) time.Time {
 	if lastDay.Weekday() != time.Sunday {
 		for lastDay.Weekday() != time.Sunday {
 			lastDay = lastDay.AddDate(0, 0, +1)
