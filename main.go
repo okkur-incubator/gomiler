@@ -110,36 +110,36 @@ func main() {
 	var newBaseURL, projectID string
 	switch api {
 	case "gitlab":
-		milestoneData := gitlab.createGitlabMilestoneData(advance, strings.ToLower(interval))
+		milestoneData := gitlab.CreateMilestoneData(advance, strings.ToLower(interval))
 		newBaseURL = URL + "/api/v4"
-		projectID, err = gitlab.getProjectID(newBaseURL, token, project, namespace)
+		projectID, err = gitlab.GetProjectID(newBaseURL, token, project, namespace)
 		if err != nil {
 			logger.Fatal(err)
 		}
-		err = gitlab.createAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData)
+		err = gitlab.CreateAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData)
 		if err != nil {
 			logger.Println(err)
 		}
-		closedMilestones, err := gitlab.getClosedMilestones(newBaseURL, token, projectID, milestoneData)
+		closedMilestones, err := gitlab.GetClosedMilestones(newBaseURL, token, projectID, milestoneData)
 		if err != nil {
 			logger.Println(err)
 		}
-		err = gitlab.reactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID)
+		err = gitlab.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID)
 		if err != nil {
 			logger.Println(err)
 		}
 	case "github":
-		milestoneData := github.createGithubMilestoneData(advance, strings.ToLower(interval))
+		milestoneData := github.CreateMilestoneData(advance, strings.ToLower(interval))
 		newBaseURL = URL + "/repos/" + namespace + "/"
-		err = github.createAndDisplayNewMilestones(newBaseURL, token, project, milestoneData)
+		err = github.CreateAndDisplayNewMilestones(newBaseURL, token, project, milestoneData)
 		if err != nil {
 			logger.Println(err)
 		}
-		closedMilestones, err := github.getClosedMilestones(newBaseURL, token, project, milestoneData)
+		closedMilestones, err := github.GetClosedMilestones(newBaseURL, token, project, milestoneData)
 		if err != nil {
 			logger.Println(err)
 		}
-		err = github.reactivateClosedMilestones(closedMilestones, newBaseURL, token, project)
+		err = github.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, project)
 		if err != nil {
 			logger.Println(err)
 		}

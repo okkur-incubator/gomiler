@@ -70,8 +70,8 @@ func lastDayWeek(lastDay time.Time) time.Time {
 	return lastDay
 }
 
-// Function to get project ID from the gitLabAPI
-func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
+// GetProjectID function that gets a project's ID from the gitLabAPI
+func GetProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
 	strURL := []string{baseURL, "/projects/"}
 	URL := strings.Join(strURL, "")
 	u, _ := url.Parse(URL)
@@ -167,7 +167,8 @@ func getInactiveMilestones(baseURL string, token string, project string) ([]gitl
 	return getMilestones(baseURL, token, project, state)
 }
 
-func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, project string) error {
+// ReactivateClosedMilestones reactivates closed milestones that occur in the future
+func ReactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, project string) error {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {
@@ -221,7 +222,7 @@ func getMilestones(baseURL string, token string, project string, state string) (
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func createMilestoneData(advance int, interval string) map[string]milestone {
+func CreateMilestoneData(advance int, interval string) map[string]milestone {
 	today := time.Now().Local()
 	milestones := map[string]milestone{}
 	switch interval {
@@ -295,7 +296,8 @@ func createMilestones(baseURL string, token string, project string, milestones m
 	return nil
 }
 
-func createAndDisplayNewMilestones(baseURL string, token string,
+// CreateAndDisplayNewMilestones creates and displays new milestones
+func CreateAndDisplayNewMilestones(baseURL string, token string,
 	projectID string, milestoneData map[string]milestone) error {
 	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
 	if err != nil {
@@ -335,7 +337,8 @@ func createAndDisplayNewMilestones(baseURL string, token string,
 	return nil
 }
 
-func getClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]milestone) (map[string]milestone, error) {
+// GetClosedMilestones gets closed milestones
+func GetClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]milestone) (map[string]milestone, error) {
 	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID)
 	if err != nil {
 		return nil, err
