@@ -3,7 +3,13 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/peterhellberg/link"
+	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -37,18 +43,42 @@ type milestone struct {
 	ID      string
 	Title   string
 	State   string
-	Number  int
+}
+
+// Initialization of logging variable
+var logger *log.Logger
+
+// LoggerSetup Initialization
+func LoggerSetup(info io.Writer) {
+	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+// Function to get last day of the month
+func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
+	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
+	return t
+}
+
+// Function to get last day of the week
+func lastDayWeek(lastDay time.Time) time.Time {
+	if lastDay.Weekday() != time.Sunday {
+		for lastDay.Weekday() != time.Sunday {
+			lastDay = lastDay.AddDate(0, 0, +1)
+		}
+		return lastDay
+	}
+	return lastDay
 }
 
 // Function to get project ID from the gitLabAPI
-func getProjectID(baseURL string, token string, projectname string, namespace string, api string) (string, error) {
+func getProjectID(baseURL string, token string, projectname string, namespace string) (string, error) {
 	strURL := []string{baseURL, "/projects/"}
 	URL := strings.Join(strURL, "")
 	u, _ := url.Parse(URL)
 	q := u.Query()
 	q.Set("search", projectname)
 	u.RawQuery = q.Encode()
-	apiData, err := paginate(u.String(), token, api)
+	apiData, err := paginate(u.String(), token)
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +101,7 @@ func getProjectID(baseURL string, token string, projectname string, namespace st
 	return "", fmt.Errorf("project %s not found", projectname)
 }
 
-func createGitlabMilestoneMap(gitlabAPI []gitlabAPI, api string) map[string]milestone {
+func createGitlabMilestoneMap(gitlabAPI []gitlabAPI) map[string]milestone {
 	milestones := map[string]milestone{}
 	for _, v := range gitlabAPI {
 		var m milestone
@@ -82,4 +112,244 @@ func createGitlabMilestoneMap(gitlabAPI []gitlabAPI, api string) map[string]mile
 	}
 
 	return milestones
+}
+
+func paginate(URL string, token string) ([][]byte, error) {
+	apiData := make([][]byte, 1)
+	client := &http.Client{}
+	paginate := true
+	for paginate == true {
+		paginate = false
+		req, err := http.NewRequest("GET", URL, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		respByte, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		apiData = append(apiData, respByte)
+		defer resp.Body.Close()
+
+		// Retrieve next page header
+		linkHeader := resp.Header.Get("Link")
+		parsedHeader := link.Parse(linkHeader)
+		for _, elem := range parsedHeader {
+			if elem.Rel != "next" {
+				continue
+			}
+
+			// Prevent break and modify URL for next iteration
+			if elem.Rel == "next" {
+				URL = elem.URI
+				paginate = true
+			}
+		}
+	}
+	return apiData, nil
+}
+
+// Get and return currently active milestones
+func getActiveMilestones(baseURL string, token string, projectID string) ([]gitlabAPI, error) {
+	var state string
+	state = "active"
+	return getMilestones(baseURL, token, projectID, state)
+}
+
+// Get and return inactive milestones
+func getInactiveMilestones(baseURL string, token string, project string) ([]gitlabAPI, error) {
+	state := "closed"
+	return getMilestones(baseURL, token, project, state)
+}
+
+func reactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, project string) error {
+	client := &http.Client{}
+	var strURL []string
+	for _, v := range milestones {
+		milestoneID := v.ID
+		strURL = []string{baseURL, "/projects/", project, "/milestones/", milestoneID}
+		URL := strings.Join(strURL, "")
+		var req *http.Request
+		var err error
+		// Overwrite state information in URL
+		u, _ := url.Parse(URL)
+		q := u.Query()
+		q.Set("state_event", "activate")
+		u.RawQuery = q.Encode()
+		req, err = http.NewRequest("PUT", u.String(), nil)
+		if err != nil {
+			logger.Println(err)
+		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+	}
+
+	return nil
+}
+
+func getMilestones(baseURL string, token string, project string, state string) ([]gitlabAPI, error) {
+	var strURL []string
+	var URL, newURL string
+	var apiData [][]byte
+	strURL = []string{baseURL, "/projects/", project, "/milestones"}
+	URL = strings.Join(strURL, "")
+	u, _ := url.Parse(URL)
+	q := u.Query()
+	q.Set("state", state)
+	u.RawQuery = q.Encode()
+	newURL = u.String()
+	apiData, err := paginate(newURL, token)
+	if err != nil {
+		return nil, err
+	}
+	milestones := []gitlabAPI{}
+	tmpM := []gitlabAPI{}
+	for _, v := range apiData {
+		json.Unmarshal(v, &tmpM)
+		milestones = append(milestones, tmpM...)
+	}
+	return milestones, nil
+}
+
+// CreateMilestoneData creates new milestones with title and due date
+func createMilestoneData(advance int, interval string) map[string]milestone {
+	today := time.Now().Local()
+	milestones := map[string]milestone{}
+	switch interval {
+	case "daily":
+		for i := 0; i < advance; i++ {
+			var m milestone
+			var dueDate string
+			title := today.AddDate(0, 0, i).Format("2006-01-02")
+			dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
+		}
+	case "weekly":
+		for i := 0; i < advance; i++ {
+			var m milestone
+			var dueDate string
+			lastDay := lastDayWeek(today)
+			year, week := lastDay.ISOWeek()
+			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
+			dueDate = lastDay.Format("2006-01-02")
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
+			today = lastDay.AddDate(0, 0, 7)
+		}
+	case "monthly":
+		for i := 0; i < advance; i++ {
+			var m milestone
+			var dueDate string
+			date := today.AddDate(0, i, 0)
+			lastDay := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
+			title := date.Format("2006-01")
+			dueDate = lastDay.Format("2006-01-02")
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
+		}
+	default:
+		logger.Println("Error: Incorrect interval")
+		return milestones
+	}
+
+	return milestones
+}
+
+func createMilestones(baseURL string, token string, project string, milestones map[string]milestone) error {
+	client := &http.Client{}
+	var strURL []string
+	strURL = []string{baseURL, "/projects/", project, "/milestones"}
+	URL := strings.Join(strURL, "")
+	params := url.Values{}
+	for _, v := range milestones {
+		var req *http.Request
+		var err error
+
+		params.Set("dueDate", v.DueDate)
+		params.Set("title", v.Title)
+		req, err = http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
+		if err != nil {
+			return err
+		}
+		req.Header.Add("PRIVATE-TOKEN", token)
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+	}
+
+	return nil
+}
+
+func createAndDisplayNewMilestones(baseURL string, token string,
+	projectID string, milestoneData map[string]milestone) error {
+	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
+	if err != nil {
+		return err
+	}
+	activeMilestones := createGitlabMilestoneMap(activeMilestonesAPI)
+
+	// copy map of active milestones
+	newMilestones := map[string]milestone{}
+	for k, v := range milestoneData {
+		newMilestones[k] = v
+	}
+	for k := range milestoneData {
+		for ok := range activeMilestones {
+			if k == ok {
+				delete(newMilestones, k)
+			}
+		}
+	}
+	if len(newMilestones) == 0 {
+		logger.Println("No milestone creation needed")
+	} else {
+		logger.Println("New milestones:")
+		var keys []string
+		for k := range newMilestones {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			logger.Printf("Title: %s - Due Date: %s", newMilestones[key].Title, newMilestones[key].DueDate)
+		}
+		err = createMilestones(baseURL, token, projectID, newMilestones)
+		if err != nil {
+			return (err)
+		}
+	}
+	return nil
+}
+
+func getClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]milestone) (map[string]milestone, error) {
+	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+	closedGitlabMilestones := createGitlabMilestoneMap(closedMilestonesAPI)
+
+	// copy map of closed milestones
+	milestones := map[string]milestone{}
+	for k := range milestoneData {
+		for ek, ev := range closedGitlabMilestones {
+			if k == ek {
+				milestones[ek] = ev
+			}
+		}
+	}
+	return milestones, nil
 }
