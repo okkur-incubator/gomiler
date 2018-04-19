@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/peterhellberg/link"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -43,14 +42,6 @@ type milestone struct {
 	ID      string
 	Title   string
 	State   string
-}
-
-// Initialization of logging variable
-var logger *log.Logger
-
-// LoggerSetup Initialization
-func LoggerSetup(info io.Writer) {
-	logger = log.New(info, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 // Function to get last day of the month
@@ -168,7 +159,7 @@ func getInactiveMilestones(baseURL string, token string, project string) ([]gitl
 }
 
 // ReactivateClosedMilestones reactivates closed milestones that occur in the future
-func ReactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, project string) error {
+func ReactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, project string, logger *log.Logger) error {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {
@@ -222,7 +213,7 @@ func getMilestones(baseURL string, token string, project string, state string) (
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func CreateMilestoneData(advance int, interval string) map[string]milestone {
+func CreateMilestoneData(advance int, interval string, logger *log.Logger) map[string]milestone {
 	today := time.Now().Local()
 	milestones := map[string]milestone{}
 	switch interval {
@@ -298,7 +289,7 @@ func createMilestones(baseURL string, token string, project string, milestones m
 
 // CreateAndDisplayNewMilestones creates and displays new milestones
 func CreateAndDisplayNewMilestones(baseURL string, token string,
-	projectID string, milestoneData map[string]milestone) error {
+	projectID string, milestoneData map[string]milestone, logger *log.Logger) error {
 	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
 	if err != nil {
 		return err

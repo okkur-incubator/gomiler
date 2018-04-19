@@ -110,13 +110,13 @@ func main() {
 	var newBaseURL, projectID string
 	switch api {
 	case "gitlab":
-		milestoneData := gitlab.CreateMilestoneData(advance, strings.ToLower(interval))
+		milestoneData := gitlab.CreateMilestoneData(advance, strings.ToLower(interval), logger)
 		newBaseURL = URL + "/api/v4"
 		projectID, err = gitlab.GetProjectID(newBaseURL, token, project, namespace)
 		if err != nil {
 			logger.Fatal(err)
 		}
-		err = gitlab.CreateAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData)
+		err = gitlab.CreateAndDisplayNewMilestones(newBaseURL, token, projectID, milestoneData, logger)
 		if err != nil {
 			logger.Println(err)
 		}
@@ -124,14 +124,14 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		err = gitlab.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID)
+		err = gitlab.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID, logger)
 		if err != nil {
 			logger.Println(err)
 		}
 	case "github":
-		milestoneData := github.CreateMilestoneData(advance, strings.ToLower(interval))
+		milestoneData := github.CreateMilestoneData(advance, strings.ToLower(interval), logger)
 		newBaseURL = URL + "/repos/" + namespace + "/"
-		err = github.CreateAndDisplayNewMilestones(newBaseURL, token, project, milestoneData)
+		err = github.CreateAndDisplayNewMilestones(newBaseURL, token, project, milestoneData, logger)
 		if err != nil {
 			logger.Println(err)
 		}
