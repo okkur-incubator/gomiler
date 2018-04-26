@@ -17,6 +17,7 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/okkur/gomiler/utils"
 	"github.com/peterhellberg/link"
 	"io/ioutil"
 	"log"
@@ -56,23 +57,6 @@ type milestone struct {
 	ID      string
 	Title   string
 	State   string
-}
-
-// Function to get last day of the month
-func lastDayMonth(year int, month int, timezone *time.Location) time.Time {
-	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
-	return t
-}
-
-// Function to get last day of the week
-func lastDayWeek(lastDay time.Time) time.Time {
-	if lastDay.Weekday() != time.Sunday {
-		for lastDay.Weekday() != time.Sunday {
-			lastDay = lastDay.AddDate(0, 0, +1)
-		}
-		return lastDay
-	}
-	return lastDay
 }
 
 // GetProjectID function that gets a project's ID from the gitLabAPI
@@ -245,7 +229,7 @@ func CreateMilestoneData(advance int, interval string, logger *log.Logger) map[s
 		for i := 0; i < advance; i++ {
 			var m milestone
 			var dueDate string
-			lastDay := lastDayWeek(today)
+			lastDay := utils.LastDayWeek(today)
 			year, week := lastDay.ISOWeek()
 			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
 			dueDate = lastDay.Format("2006-01-02")
@@ -259,7 +243,7 @@ func CreateMilestoneData(advance int, interval string, logger *log.Logger) map[s
 			var m milestone
 			var dueDate string
 			date := today.AddDate(0, i, 0)
-			lastDay := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
+			lastDay := utils.LastDayMonth(date.Year(), int(date.Month()), time.UTC)
 			title := date.Format("2006-01")
 			dueDate = lastDay.Format("2006-01-02")
 			m.Title = title

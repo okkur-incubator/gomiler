@@ -14,3 +14,23 @@ limitations under the License.
 
 package utils
 
+import (
+	"time"
+)
+
+// LastDayMonth function to get last day of the month
+func LastDayMonth(year int, month int, timezone *time.Location) time.Time {
+	t := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC)
+	return t
+}
+
+// LastDayWeek function to get last day of the week
+func LastDayWeek(lastDay time.Time) time.Time {
+	if lastDay.Weekday() != time.Sunday {
+		for lastDay.Weekday() != time.Sunday {
+			lastDay = lastDay.AddDate(0, 0, +1)
+		}
+		return lastDay
+	}
+	return lastDay
+}
