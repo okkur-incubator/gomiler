@@ -39,7 +39,7 @@ func TestLastDayWeek(t *testing.T) {
 }
 
 func TestCreateMilestoneDataDaily(t *testing.T) {
-	milestones := CreateMilestoneData(30, "daily", nil)
+	milestones := utils.CreateMilestoneData(30, "daily", nil, "github")
 	today := time.Now().Local().Format("2006-01-02")
 	todayFormatted := time.Now().Local().Format(time.RFC3339)
 	if milestones[today].DueDate != todayFormatted {
@@ -48,7 +48,7 @@ func TestCreateMilestoneDataDaily(t *testing.T) {
 }
 
 func TestCreateMilestoneDataWeekly(t *testing.T) {
-	milestones := CreateMilestoneData(20, "weekly", nil)
+	milestones := utils.CreateMilestoneData(20, "weekly", nil, "github")
 	today := time.Now().Local()
 	lastDay := utils.LastDayWeek(today)
 	year, week := lastDay.ISOWeek()
@@ -60,7 +60,7 @@ func TestCreateMilestoneDataWeekly(t *testing.T) {
 }
 
 func TestCreateMilestoneDataMonthly(t *testing.T) {
-	milestones := CreateMilestoneData(2, "monthly", nil)
+	milestones := utils.CreateMilestoneData(2, "monthly", nil, "github")
 	currentMonth := time.Now().Local().Format("2006-01")
 	expected := utils.LastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format(time.RFC3339)
 	if milestones[currentMonth].DueDate != expected {
