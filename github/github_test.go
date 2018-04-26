@@ -15,6 +15,7 @@ limitations under the License.
 package github
 
 import (
+	"github.com/okkur/gomiler/utils"
 	"strconv"
 	"testing"
 	"time"
@@ -22,7 +23,7 @@ import (
 
 func TestLastDayMonth(t *testing.T) {
 	date := time.Now().Local()
-	lastDay := lastDayMonth(date.Year(), int(date.Month()), time.UTC)
+	lastDay := utils.LastDayMonth(date.Year(), int(date.Month()), time.UTC)
 	expectedDay := time.Date(date.Year(), time.Month(date.Month())+1, 0, 0, 0, 0, 0, time.UTC)
 	if lastDay != expectedDay {
 		t.Errorf("Expected %v, got %v", expectedDay, lastDay)
@@ -31,7 +32,7 @@ func TestLastDayMonth(t *testing.T) {
 
 func TestLastDayWeek(t *testing.T) {
 	date := time.Now().Local()
-	lastDay := lastDayWeek(date)
+	lastDay := utils.LastDayWeek(date)
 	if lastDay.Weekday() != time.Sunday {
 		t.Errorf("Expected %s, got %s", time.Sunday, lastDay.Weekday())
 	}
@@ -49,7 +50,7 @@ func TestCreateMilestoneDataDaily(t *testing.T) {
 func TestCreateMilestoneDataWeekly(t *testing.T) {
 	milestones := CreateMilestoneData(20, "weekly", nil)
 	today := time.Now().Local()
-	lastDay := lastDayWeek(today)
+	lastDay := utils.LastDayWeek(today)
 	year, week := lastDay.ISOWeek()
 	title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
 	expected := lastDay.Format(time.RFC3339)
@@ -61,7 +62,7 @@ func TestCreateMilestoneDataWeekly(t *testing.T) {
 func TestCreateMilestoneDataMonthly(t *testing.T) {
 	milestones := CreateMilestoneData(2, "monthly", nil)
 	currentMonth := time.Now().Local().Format("2006-01")
-	expected := lastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format(time.RFC3339)
+	expected := utils.LastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format(time.RFC3339)
 	if milestones[currentMonth].DueDate != expected {
 		t.Errorf("Expected %s, got %s", expected, milestones[currentMonth].DueDate)
 	}
