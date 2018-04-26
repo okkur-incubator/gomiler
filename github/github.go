@@ -42,20 +42,11 @@ type githubAPI struct {
 	Number      int        `json:"number"`
 }
 
-// Struct to be used for milestone queries
-type milestone struct {
-	DueDate string
-	ID      string
-	Title   string
-	State   string
-	Number  int
-}
-
 // CreateGithubMilestoneMap creates a map of GitHub milestones
-func CreateGithubMilestoneMap(githubAPI []githubAPI) map[string]milestone {
-	milestones := map[string]milestone{}
+func CreateGithubMilestoneMap(githubAPI []githubAPI) map[string]utils.Milestone {
+	milestones := map[string]utils.Milestone{}
 	for _, v := range githubAPI {
-		var m milestone
+		var m utils.Milestone
 		m.DueDate = v.DueDate
 		m.ID = strconv.Itoa(v.ID)
 		m.Title = v.Title
@@ -122,7 +113,7 @@ func getInactiveMilestones(baseURL string, token string, project string) ([]gith
 }
 
 // ReactivateClosedMilestones reactivates closed milestones that occur in the future
-func ReactivateClosedMilestones(milestones map[string]milestone, baseURL string, token string, project string) error {
+func ReactivateClosedMilestones(milestones map[string]utils.Milestone, baseURL string, token string, project string) error {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {
@@ -181,55 +172,7 @@ func getMilestones(baseURL string, token string, project string, state string) (
 	return milestones, nil
 }
 
-// CreateMilestoneData creates new milestones with title and due date
-func CreateMilestoneData(advance int, interval string, logger *log.Logger) map[string]milestone {
-	today := time.Now().Local()
-	milestones := map[string]milestone{}
-	switch interval {
-	case "daily":
-		for i := 0; i < advance; i++ {
-			var m milestone
-			var dueDate string
-			title := today.AddDate(0, 0, i).Format("2006-01-02")
-			dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
-			m.Title = title
-			m.DueDate = dueDate
-			milestones[title] = m
-		}
-	case "weekly":
-		for i := 0; i < advance; i++ {
-			var m milestone
-			var dueDate string
-			lastDay := utils.LastDayWeek(today)
-			year, week := lastDay.ISOWeek()
-			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-			dueDate = lastDay.Format(time.RFC3339)
-			m.Title = title
-			m.DueDate = dueDate
-			milestones[title] = m
-			today = lastDay.AddDate(0, 0, 7)
-		}
-	case "monthly":
-		for i := 0; i < advance; i++ {
-			var m milestone
-			var dueDate string
-			date := today.AddDate(0, i, 0)
-			lastDay := utils.LastDayMonth(date.Year(), int(date.Month()), time.UTC)
-			title := date.Format("2006-01")
-			dueDate = lastDay.Format(time.RFC3339)
-			m.Title = title
-			m.DueDate = dueDate
-			milestones[title] = m
-		}
-	default:
-		logger.Println("Error: Incorrect interval")
-		return milestones
-	}
-
-	return milestones
-}
-
-func createMilestones(baseURL string, token string, project string, milestones map[string]milestone) error {
+func createMilestones(baseURL string, token string, project string, milestones map[string]utils.Milestone) error {
 	client := &http.Client{}
 	var strURL []string
 	strURL = []string{baseURL, project, "/milestones"}
@@ -266,7 +209,7 @@ func createMilestones(baseURL string, token string, project string, milestones m
 
 // CreateAndDisplayNewMilestones creates and displays new milestones
 func CreateAndDisplayNewMilestones(baseURL string, token string,
-	projectID string, milestoneData map[string]milestone, logger *log.Logger) error {
+	projectID string, milestoneData map[string]utils.Milestone, logger *log.Logger) error {
 	activeMilestonesAPI, err := getActiveMilestones(baseURL, token, projectID)
 	if err != nil {
 		return err
@@ -274,7 +217,7 @@ func CreateAndDisplayNewMilestones(baseURL string, token string,
 	activeMilestones := CreateGithubMilestoneMap(activeMilestonesAPI)
 
 	// copy map of active milestones
-	newMilestones := map[string]milestone{}
+	newMilestones := map[string]utils.Milestone{}
 	for k, v := range milestoneData {
 		newMilestones[k] = v
 	}
@@ -306,7 +249,7 @@ func CreateAndDisplayNewMilestones(baseURL string, token string,
 }
 
 // GetClosedMilestones gets closed milestones
-func GetClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]milestone) (map[string]milestone, error) {
+func GetClosedMilestones(baseURL string, token string, projectID string, milestoneData map[string]utils.Milestone) (map[string]utils.Milestone, error) {
 	closedMilestonesAPI, err := getInactiveMilestones(baseURL, token, projectID)
 	if err != nil {
 		return nil, err
@@ -314,7 +257,7 @@ func GetClosedMilestones(baseURL string, token string, projectID string, milesto
 	closedGithubMilestones := CreateGithubMilestoneMap(closedMilestonesAPI)
 
 	// copy map of closed milestones
-	milestones := map[string]milestone{}
+	milestones := map[string]utils.Milestone{}
 	for k := range milestoneData {
 		for ek, ev := range closedGithubMilestones {
 			if k == ek {

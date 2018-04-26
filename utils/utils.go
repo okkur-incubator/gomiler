@@ -15,8 +15,19 @@ limitations under the License.
 package utils
 
 import (
+	"log"
+	"strconv"
 	"time"
 )
+
+// Milestone struct to be used for milestone queries
+type Milestone struct {
+	DueDate string
+	ID      string
+	Title   string
+	State   string
+	Number  int
+}
 
 // LastDayMonth function to get last day of the month
 func LastDayMonth(year int, month int, timezone *time.Location) time.Time {
@@ -33,4 +44,67 @@ func LastDayWeek(lastDay time.Time) time.Time {
 		return lastDay
 	}
 	return lastDay
+}
+
+// CreateMilestoneData creates new milestones with title and due date
+func CreateMilestoneData(advance int, interval string, logger *log.Logger, api string) map[string]Milestone {
+	today := time.Now().Local()
+	milestones := map[string]Milestone{}
+	switch interval {
+	case "daily":
+		for i := 0; i < advance; i++ {
+			var m Milestone
+			var dueDate string
+			title := today.AddDate(0, 0, i).Format("2006-01-02")
+			switch api {
+			case "gitlab":
+				dueDate = today.AddDate(0, 0, i).Format("2006-01-02")
+			case "github":
+				dueDate = today.AddDate(0, 0, i).Format(time.RFC3339)
+			}
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
+		}
+	case "weekly":
+		for i := 0; i < advance; i++ {
+			var m Milestone
+			var dueDate string
+			lastDay := LastDayWeek(today)
+			year, week := lastDay.ISOWeek()
+			title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
+			switch api {
+			case "gitlab":
+				dueDate = lastDay.Format("2006-01-02")
+			case "github":
+				dueDate = lastDay.Format(time.RFC3339)
+			}
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
+			today = lastDay.AddDate(0, 0, 7)
+		}
+	case "monthly":
+		for i := 0; i < advance; i++ {
+			var m Milestone
+			var dueDate string
+			date := today.AddDate(0, i, 0)
+			lastDay := LastDayMonth(date.Year(), int(date.Month()), time.UTC)
+			title := date.Format("2006-01")
+			switch api {
+			case "gitlab":
+				dueDate = lastDay.Format("2006-01-02")
+			case "github":
+				dueDate = lastDay.Format(time.RFC3339)
+			}
+			m.Title = title
+			m.DueDate = dueDate
+			milestones[title] = m
+		}
+	default:
+		logger.Println("Error: Incorrect interval")
+		return milestones
+	}
+
+	return milestones
 }
