@@ -16,41 +16,9 @@ package gitlab
 
 import (
 	"encoding/json"
-	"github.com/okkur/gomiler/utils"
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
-	"strconv"
 	"testing"
-	"time"
 )
-
-func TestCreateMilestoneDataDaily(t *testing.T) {
-	milestones := utils.CreateMilestoneData(30, "daily", nil, "gitlab")
-	today := time.Now().Local().Format("2006-01-02")
-	if milestones[today].DueDate != today {
-		t.Errorf("Expected %s, got %s", today, milestones[today].DueDate)
-	}
-}
-
-func TestCreateMilestoneDataWeekly(t *testing.T) {
-	milestones := utils.CreateMilestoneData(20, "weekly", nil, "gitlab")
-	today := time.Now().Local()
-	lastDay := utils.LastDayWeek(today)
-	year, week := lastDay.ISOWeek()
-	title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
-	expected := lastDay.Format("2006-01-02")
-	if milestones[title].DueDate != expected {
-		t.Errorf("Expected %s, got %s", expected, milestones[title].DueDate)
-	}
-}
-
-func TestCreateMilestoneDataMonthly(t *testing.T) {
-	milestones := utils.CreateMilestoneData(2, "monthly", nil, "gitlab")
-	currentMonth := time.Now().Local().Format("2006-01")
-	expected := utils.LastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format("2006-01-02")
-	if milestones[currentMonth].DueDate != expected {
-		t.Errorf("Expected %s, got %s", expected, milestones[currentMonth].DueDate)
-	}
-}
 
 func TestGetProjectID(t *testing.T) {
 	httpmock.Activate()
