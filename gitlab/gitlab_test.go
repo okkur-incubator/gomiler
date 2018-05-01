@@ -23,23 +23,6 @@ import (
 	"time"
 )
 
-func TestLastDayMonth(t *testing.T) {
-	date := time.Now().Local()
-	lastDay := utils.LastDayMonth(date.Year(), int(date.Month()), time.UTC)
-	expectedDay := time.Date(date.Year(), time.Month(date.Month())+1, 0, 0, 0, 0, 0, time.UTC)
-	if lastDay != expectedDay {
-		t.Errorf("Expected %v, got %v", expectedDay, lastDay)
-	}
-}
-
-func TestLastDayWeek(t *testing.T) {
-	date := time.Now().Local()
-	lastDay := utils.LastDayWeek(date)
-	if lastDay.Weekday() != time.Sunday {
-		t.Errorf("Expected %s, got %s", time.Sunday, lastDay.Weekday())
-	}
-}
-
 func TestCreateMilestoneDataDaily(t *testing.T) {
 	milestones := utils.CreateMilestoneData(30, "daily", nil, "gitlab")
 	today := time.Now().Local().Format("2006-01-02")
