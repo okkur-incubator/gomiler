@@ -15,11 +15,11 @@ limitations under the License.
 package main
 
 import (
-	"github.com/okkur/gomiler/utils"
 	"flag"
 	"fmt"
 	github "github.com/okkur/gomiler/github"
 	gitlab "github.com/okkur/gomiler/gitlab"
+	"github.com/okkur/gomiler/utils"
 	"io"
 	"log"
 	"net/http"
