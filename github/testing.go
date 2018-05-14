@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gitlab
+package github
 
 import (
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
@@ -22,44 +22,36 @@ import (
 	"time"
 )
 
-// MockGitlabAPI populates a []gitlabAPI with mock API data
-func MockGitlabAPI() []gitlabAPI {
+// MockGithubAPI populates a []githubAPI with mock API data
+func MockGithubAPI() []githubAPI {
 	currentTime := time.Now()
-	gitlabAPImock := []gitlabAPI{}
-	mock := gitlabAPI{}
+	githubAPImock := []githubAPI{}
+	mock := githubAPI{}
 	for i := 0; i < 10; i++ {
 		mock.ID = i
-		mock.Iid = i
-		mock.ProjectID = 1
 		mock.Title = "test" + strconv.Itoa(i)
 		mock.Description = "test" + strconv.Itoa(i)
-		mock.StartDate = "test" + strconv.Itoa(i)
-		mock.DueDate = "test" + strconv.Itoa(i)
 		if i%2 == 0 {
 			mock.State = "closed"
 		} else {
-			mock.State = "active"
+			mock.State = "open"
 		}
-		mock.UpdatedAt = &currentTime
 		mock.CreatedAt = &currentTime
-		mock.Name = "test" + strconv.Itoa(i)
-		mock.NameSpace.ID = i
-		mock.NameSpace.Name = "test" + strconv.Itoa(i)
-		mock.NameSpace.Path = "test" + strconv.Itoa(i)
-		mock.NameSpace.Kind = "test" + strconv.Itoa(i)
-		mock.NameSpace.FullPath = "test" + strconv.Itoa(i)
+		mock.UpdatedAt = &currentTime
+		mock.StartDate = "test" + strconv.Itoa(i)
+		mock.DueDate = "test" + strconv.Itoa(i)
+		mock.Number = i
 	}
-	gitlabAPImock = append(gitlabAPImock, mock)
 
-	return gitlabAPImock
+	return githubAPImock
 }
 
-// MockGitlabAPIGetRequest creates a mock responder for GET requests and sends back mock JSON data
-func MockGitlabAPIGetRequest(URL string) {
-	json := MockGitlabAPI()
+// MockGithubAPIGetRequest creates a mock responder for GET requests and sends back mock JSON data
+func MockGithubAPIGetRequest(URL string) {
+	json := MockGithubAPI()
 	httpmock.Activate()
 	var strURL []string
-	strURL = []string{URL, "/projects/", "1", "/milestones"}
+	strURL = []string{URL, "1", "/milestones"}
 	newURL := strings.Join(strURL, "")
 	httpmock.RegisterResponder("GET", newURL,
 		func(req *http.Request) (*http.Response, error) {
@@ -72,12 +64,12 @@ func MockGitlabAPIGetRequest(URL string) {
 	)
 }
 
-// MockGitlabAPIPostRequest creates a mock responder for POST requests and sends back mock JSON data
-func MockGitlabAPIPostRequest(URL string) {
-	json := MockGitlabAPI()
+// MockGithubAPIPostRequest creates a mock responder for POST requests and sends back mock JSON data
+func MockGithubAPIPostRequest(URL string) {
+	json := MockGithubAPI()
 	httpmock.Activate()
 	var strURL []string
-	strURL = []string{URL, "/projects/", "1", "/milestones"}
+	strURL = []string{URL, "1", "/milestones"}
 	newURL := strings.Join(strURL, "")
 	httpmock.RegisterResponder("POST", newURL,
 		func(req *http.Request) (*http.Response, error) {
@@ -90,14 +82,14 @@ func MockGitlabAPIPostRequest(URL string) {
 	)
 }
 
-// MockGitlabAPIPutRequest creates a mock responder for PUT requests and sends back mock JSON data
-func MockGitlabAPIPutRequest(URL string) {
-	json := MockGitlabAPI()
+// MockGithubAPIPatchRequest creates a mock responder for PUT requests and sends back mock JSON data
+func MockGithubAPIPatchRequest(URL string) {
+	json := MockGithubAPI()
 	httpmock.Activate()
 	var strURL []string
-	strURL = []string{URL, "/projects/", "1", "/milestones", "1"}
+	strURL = []string{URL, "1", "/milestones", "1"}
 	newURL := strings.Join(strURL, "")
-	httpmock.RegisterResponder("PUT", newURL,
+	httpmock.RegisterResponder("PATCH", newURL,
 		func(req *http.Request) (*http.Response, error) {
 			resp, err := httpmock.NewJsonResponse(200, json)
 			if err != nil {
