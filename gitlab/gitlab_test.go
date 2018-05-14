@@ -18,7 +18,13 @@ import (
 	"encoding/json"
 	"github.com/okkur/gomiler/utils"
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
+	"log"
+	"os"
 	"testing"
+)
+
+var (
+	logger = log.New(os.Stderr, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 )
 
 func TestGetProjectID(t *testing.T) {
@@ -52,7 +58,7 @@ func TestGitlabCreateAndDisplayNewMilestones(t *testing.T) {
 	mockURL := "https://" + "gitlab.com" + "/api/v4"
 	MockGitlabAPIGetRequest(mockURL)
 	MockGitlabAPIPostRequest(mockURL)
-	err := CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, nil)
+	err := CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, logger)
 	if err != nil {
 		t.Error(err)
 	}
