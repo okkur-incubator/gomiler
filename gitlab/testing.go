@@ -18,6 +18,7 @@ import (
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -52,11 +53,50 @@ func MockGitlabAPI() []gitlabAPI {
 	return gitlabAPImock
 }
 
-// MockGitlabAPIRequest creates a mock responder and sends back mock JSON data
-func MockGitlabAPIRequest(URL string) {
+// MockGitlabAPIGetRequest creates a mock responder for GET requests and sends back mock JSON data
+func MockGitlabAPIGetRequest(URL string) {
 	json := MockGitlabAPI()
 	httpmock.Activate()
-	httpmock.RegisterResponder("GET", URL,
+	var strURL []string
+	strURL = []string{URL, "/projects/", "1", "/milestones"}
+	newURL := strings.Join(strURL, "")
+	httpmock.RegisterResponder("GET", newURL,
+		func(req *http.Request) (*http.Response, error) {
+			resp, err := httpmock.NewJsonResponse(200, json)
+			if err != nil {
+				return httpmock.NewStringResponse(500, ""), nil
+			}
+			return resp, nil
+		},
+	)
+}
+
+// MockGitlabAPIPostRequest creates a mock responder for POST requests and sends back mock JSON data
+func MockGitlabAPIPostRequest(URL string) {
+	json := MockGitlabAPI()
+	httpmock.Activate()
+	var strURL []string
+	strURL = []string{URL, "/projects/", "1", "/milestones"}
+	newURL := strings.Join(strURL, "")
+	httpmock.RegisterResponder("POST", newURL,
+		func(req *http.Request) (*http.Response, error) {
+			resp, err := httpmock.NewJsonResponse(200, json)
+			if err != nil {
+				return httpmock.NewStringResponse(500, ""), nil
+			}
+			return resp, nil
+		},
+	)
+}
+
+// MockGitlabAPIPutRequest creates a mock responder for PUT requests and sends back mock JSON data
+func MockGitlabAPIPutRequest(URL string) {
+	json := MockGitlabAPI()
+	httpmock.Activate()
+	var strURL []string
+	strURL = []string{URL, "/projects/", "1", "/milestones", "1"}
+	newURL := strings.Join(strURL, "")
+	httpmock.RegisterResponder("PUT", newURL,
 		func(req *http.Request) (*http.Response, error) {
 			resp, err := httpmock.NewJsonResponse(200, json)
 			if err != nil {

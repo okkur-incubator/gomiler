@@ -16,6 +16,7 @@ package gitlab
 
 import (
 	"encoding/json"
+	"github.com/okkur/gomiler/utils"
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
 	"testing"
 )
@@ -41,5 +42,18 @@ func TestGetProjectID(t *testing.T) {
 
 	if res != "1" && err != nil {
 		t.Errorf("Expected %s, got %s", "1", res)
+	}
+}
+
+func TestGitlabCreateAndDisplayNewMilestones(t *testing.T) {
+	milestoneData := utils.CreateMilestoneData(10, "daily", nil, "gitlab")
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
+	MockGitlabAPIGetRequest(mockURL)
+	MockGitlabAPIPostRequest(mockURL)
+	err := CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, nil)
+	if err != nil {
+		t.Error(err)
 	}
 }
