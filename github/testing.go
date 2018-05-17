@@ -42,6 +42,7 @@ func MockGithubAPI() []githubAPI {
 		mock.DueDate = "test" + strconv.Itoa(i)
 		mock.Number = i
 	}
+	githubAPImock = append(githubAPImock, mock)
 
 	return githubAPImock
 }
@@ -67,7 +68,6 @@ func MockGithubAPIGetRequest(URL string) {
 // MockGithubAPIPostRequest creates a mock responder for POST requests and sends back mock JSON data
 func MockGithubAPIPostRequest(URL string) {
 	json := MockGithubAPI()
-	httpmock.Activate()
 	var strURL []string
 	strURL = []string{URL, "1", "/milestones"}
 	newURL := strings.Join(strURL, "")
@@ -85,7 +85,6 @@ func MockGithubAPIPostRequest(URL string) {
 // MockGithubAPIPatchRequest creates a mock responder for PUT requests and sends back mock JSON data
 func MockGithubAPIPatchRequest(URL string) {
 	json := MockGithubAPI()
-	httpmock.Activate()
 	var strURL []string
 	strURL = []string{URL, "1", "/milestones", "1"}
 	newURL := strings.Join(strURL, "")
@@ -95,6 +94,16 @@ func MockGithubAPIPatchRequest(URL string) {
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}
+			return resp, nil
+		},
+	)
+}
+
+// MockPaginate creates a mock responder to return a byte slice
+func MockPaginate(url string, data []byte) {
+	httpmock.RegisterResponder("GET", url,
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewBytesResponse(200, data)
 			return resp, nil
 		},
 	)

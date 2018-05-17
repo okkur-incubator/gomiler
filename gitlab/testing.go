@@ -57,7 +57,6 @@ func MockGitlabAPI() []gitlabAPI {
 // MockGitlabAPIGetRequest creates a mock responder for GET requests and sends back mock JSON data
 func MockGitlabAPIGetRequest(URL string) {
 	json := MockGitlabAPI()
-	httpmock.Activate()
 	var strURL []string
 	strURL = []string{URL, "/projects/", "1", "/milestones"}
 	newURL := strings.Join(strURL, "")
@@ -75,7 +74,6 @@ func MockGitlabAPIGetRequest(URL string) {
 // MockGitlabAPIPostRequest creates a mock responder for POST requests and sends back mock JSON data
 func MockGitlabAPIPostRequest(URL string) {
 	json := MockGitlabAPI()
-	httpmock.Activate()
 	var strURL []string
 	strURL = []string{URL, "/projects/", "1", "/milestones"}
 	newURL := strings.Join(strURL, "")
@@ -93,7 +91,6 @@ func MockGitlabAPIPostRequest(URL string) {
 // MockGitlabAPIPutRequest creates a mock responder for PUT requests and sends back mock JSON data
 func MockGitlabAPIPutRequest(URL string) {
 	json := MockGitlabAPI()
-	httpmock.Activate()
 	var strURL []string
 	strURL = []string{URL, "/projects/", "1", "/milestones", "1"}
 	newURL := strings.Join(strURL, "")
@@ -103,6 +100,16 @@ func MockGitlabAPIPutRequest(URL string) {
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}
+			return resp, nil
+		},
+	)
+}
+
+// MockPaginate creates a mock responder to return a byte slice
+func MockPaginate(url string, data []byte) {
+	httpmock.RegisterResponder("GET", url,
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewBytesResponse(200, data)
 			return resp, nil
 		},
 	)
