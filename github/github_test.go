@@ -58,3 +58,37 @@ func TestPaginateFailWhenURLisWrong(t *testing.T) {
 		t.Errorf("Expected to get an error when url is wrong")
 	}
 }
+
+func TestGetActiveMilestones(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "api.github.com"
+	MockGithubAPIGetRequest(mockURL)
+	activeMilestonesAPI, err := getActiveMilestones(mockURL, "token", "1")
+	if err != nil {
+		t.Error(err)
+	}
+	activeMilestones := CreateGithubMilestoneMap(activeMilestonesAPI)
+	for _, v := range activeMilestones {
+		if v.State != "open" {
+			t.Errorf("Expected %s, got %s", "open", v.State)
+		}
+	}
+}
+
+func TestGetInactiveMilestones(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "api.github.com"
+	MockGithubAPIGetRequest(mockURL)
+	inactiveMilestonesAPI, err := getInactiveMilestones(mockURL, "token", "1")
+	if err != nil {
+		t.Error(err)
+	}
+	inactiveMilestones := CreateGithubMilestoneMap(inactiveMilestonesAPI)
+	for _, v := range inactiveMilestones {
+		if v.State != "closed" {
+			t.Errorf("Expected %s, got %s", "closed", v.State)
+		}
+	}
+}
