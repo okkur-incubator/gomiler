@@ -31,8 +31,8 @@ func TestGithubCreateAndDisplayNewMilestones(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockURL := "https://" + "api.github.com"
-	MockGithubAPIGetRequest(mockURL)
-	MockGithubAPIPostRequest(mockURL)
+	MockGithubAPIGetRequest(mockURL, "open")
+	MockGithubAPIPostRequest(mockURL, "open")
 	err := CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, logger)
 	if err != nil {
 		t.Error(err)
@@ -63,13 +63,12 @@ func TestGetActiveMilestones(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockURL := "https://" + "api.github.com"
-	MockGithubAPIGetRequest(mockURL)
+	MockGithubAPIGetRequest(mockURL, "open")
 	activeMilestonesAPI, err := getActiveMilestones(mockURL, "token", "1")
 	if err != nil {
 		t.Error(err)
 	}
-	activeMilestones := CreateGithubMilestoneMap(activeMilestonesAPI)
-	for _, v := range activeMilestones {
+	for _, v := range activeMilestonesAPI {
 		if v.State != "open" {
 			t.Errorf("Expected %s, got %s", "open", v.State)
 		}
@@ -80,15 +79,33 @@ func TestGetInactiveMilestones(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockURL := "https://" + "api.github.com"
-	MockGithubAPIGetRequest(mockURL)
+	MockGithubAPIGetRequest(mockURL, "closed")
+	inactiveMilestonesAPI, err := getInactiveMilestones(mockURL, "token", "1")
+	if err != nil {
+		t.Error(err)
+	}
+	for _, v := range inactiveMilestonesAPI {
+		if v.State != "closed" {
+			t.Errorf("Expected %s, got %s", "closed", v.State)
+		}
+	}
+}
+
+func TestReactivateClosedMilestones(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "api.github.com"
+	MockGithubAPIGetRequest(mockURL, "closed")
 	inactiveMilestonesAPI, err := getInactiveMilestones(mockURL, "token", "1")
 	if err != nil {
 		t.Error(err)
 	}
 	inactiveMilestones := CreateGithubMilestoneMap(inactiveMilestonesAPI)
 	for _, v := range inactiveMilestones {
-		if v.State != "closed" {
-			t.Errorf("Expected %s, got %s", "closed", v.State)
-		}
+		MockGithubAPIPatchRequest(mockURL, "open", v.ID)
+	}
+	err = ReactivateClosedMilestones(inactiveMilestones, mockURL, "token", "1")
+	if err != nil {
+		t.Error(err)
 	}
 }
