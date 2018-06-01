@@ -125,7 +125,7 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		err = gitlab.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID, logger)
+		_, err = gitlab.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID, logger)
 		if err != nil {
 			logger.Println(err)
 		}
@@ -140,7 +140,7 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		err = github.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, project)
+		_, err = github.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, project)
 		if err != nil {
 			logger.Println(err)
 		}

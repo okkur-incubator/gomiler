@@ -129,8 +129,13 @@ func TestReactivateClosedMilestones(t *testing.T) {
 	for _, v := range inactiveMilestones {
 		MockGitlabAPIPutRequest(mockURL, "active", v.ID)
 	}
-	err = ReactivateClosedMilestones(inactiveMilestones, mockURL, "token", "1", logger)
+	reactivatedMilestones, err := ReactivateClosedMilestones(inactiveMilestones, mockURL, "token", "1", logger)
 	if err != nil {
 		t.Error(err)
+	}
+	for _, v := range reactivatedMilestones {
+		if v.State != "active" {
+			t.Errorf("Expected %s, got %s", "active", v.State)
+		}
 	}
 }
