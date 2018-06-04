@@ -15,6 +15,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	github "github.com/okkur/gomiler/github"
@@ -63,6 +64,9 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		defer resp.Body.Close()
 		if resp.StatusCode == 200 {
 			return k, nil
+		}
+		if resp.StatusCode == 403 {
+			return "", errors.New("Provided token is invalid. Access Denied.")
 		}
 	}
 	return "", fmt.Errorf("Error: could not access GitLab or GitHub APIs")

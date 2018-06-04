@@ -43,6 +43,30 @@ func TestGitlabCheckAPI(t *testing.T) {
 	}
 }
 
+func TestGithubCheckAPIwithInvalidToken(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "api.github.com"
+	httpmock.RegisterResponder("GET", "https://api.github.com/repos/test/test",
+		httpmock.NewStringResponder(403, ""))
+	_, err := checkAPI(mockURL, "token", "test", "test")
+	if err == nil {
+		t.Errorf("Expected to get an error when token is invalid")
+	}
+}
+
+func TestGitlabCheckAPIwithInvalidToken(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com"
+	httpmock.RegisterResponder("GET", "https://gitlab.com/api/v4/version",
+		httpmock.NewStringResponder(403, ""))
+	_, err := checkAPI(mockURL, "token", "test", "test")
+	if err == nil {
+		t.Errorf("Expected to get an error when token is invalid")
+	}
+}
+
 func TestValidateGithubBaseURLScheme(t *testing.T) {
 	URL := "api.github.com"
 	baseURL, err := validateBaseURLScheme(URL)
