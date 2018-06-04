@@ -44,6 +44,7 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		"gitlab": gitlabURL,
 		"github": githubURL,
 	}
+	resp := &http.Response{}
 	client := &http.Client{}
 	for k, v := range m {
 		req, err := http.NewRequest("GET", v, nil)
@@ -57,7 +58,7 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
-		resp, err := client.Do(req)
+		resp, err = client.Do(req)
 		if err != nil {
 			return "", err
 		}
@@ -68,6 +69,9 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		if resp.StatusCode == 403 {
 			return "", errors.New("Provided token is invalid. Access Denied.")
 		}
+	}
+	if resp.StatusCode == 404 {
+		return "", errors.New("Project Not Found")
 	}
 	return "", fmt.Errorf("Error: could not access GitLab or GitHub APIs")
 }

@@ -51,6 +51,18 @@ func TestGetProjectID(t *testing.T) {
 	}
 }
 
+func TestGetProjectIDwithNonexistentProject(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
+	httpmock.RegisterResponder("GET", "https://gitlab.com/api/v4/projects/",
+		httpmock.NewStringResponder(404, ""))
+	_, err := GetProjectID(mockURL, "213123", "test", "test")
+	if err == nil {
+		t.Errorf("Expected to get an error when project does not exist")
+	}
+}
+
 func TestGitlabCreateAndDisplayNewMilestones(t *testing.T) {
 	milestoneData := utils.CreateMilestoneData(10, "daily", nil, "gitlab")
 	httpmock.Activate()
