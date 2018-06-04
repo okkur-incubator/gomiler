@@ -70,8 +70,10 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 			return "", errors.New("Provided token is invalid. Access Denied.")
 		}
 	}
+	// Check for 404 error returned from GitHub API if project not found.
+	// GitLab uses the API version page as a check, so a project not found error is returned in GetProjectID instead.
 	if resp.StatusCode == 404 {
-		return "", errors.New("Project Not Found")
+		return "", fmt.Errorf("project %s not found", project)
 	}
 	return "", fmt.Errorf("Error: could not access GitLab or GitHub APIs")
 }
