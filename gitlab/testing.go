@@ -55,7 +55,7 @@ func MockGitlabAPI(state string) []gitlabAPI {
 	return gitlabAPImock
 }
 
-// MockGitlabAPIGetRequest creates a mock responder for GET requests and sends back mock JSON data
+// MockGitlabAPIGetRequest creates a mock responder for a specific milestone endpoint and sends back mock JSON data
 func MockGitlabAPIGetRequest(URL string, state string) {
 	json := MockGitlabAPI(state)
 	var strURL []string
@@ -72,7 +72,7 @@ func MockGitlabAPIGetRequest(URL string, state string) {
 	)
 }
 
-// MockGitlabAPIPostRequest creates a mock responder for POST requests and sends back mock JSON data
+// MockGitlabAPIPostRequest creates a mock responder for a specific milestone endpoint and sends back mock JSON data
 func MockGitlabAPIPostRequest(URL string, state string) {
 	json := MockGitlabAPI(state)
 	var strURL []string
@@ -89,7 +89,7 @@ func MockGitlabAPIPostRequest(URL string, state string) {
 	)
 }
 
-// MockGitlabAPIPutRequest creates a mock responder for PUT requests and sends back mock JSON data
+// MockGitlabAPIPutRequest creates a mock responder for a specific milestone endpoint and sends back mock JSON data
 func MockGitlabAPIPutRequest(URL string, state string, id string) {
 	json := MockGitlabAPI(state)
 	var strURL []string

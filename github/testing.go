@@ -48,7 +48,7 @@ func MockGithubAPI(state string) []githubAPI {
 	return githubAPImock
 }
 
-// MockGithubAPIGetRequest creates a mock responder for GET requests and sends back mock JSON data
+// MockGithubAPIGetRequest creates a mock responder for a specific milestone endpoint and sends back mock JSON data
 func MockGithubAPIGetRequest(URL string, state string) {
 	json := MockGithubAPI(state)
 	httpmock.Activate()
@@ -66,7 +66,7 @@ func MockGithubAPIGetRequest(URL string, state string) {
 	)
 }
 
-// MockGithubAPIPostRequest creates a mock responder for POST requests and sends back mock JSON data
+// MockGithubAPIPostRequest creates a mock responder for a specific milestone endpoint and sends back mock JSON data
 func MockGithubAPIPostRequest(URL string, state string) {
 	json := MockGithubAPI(state)
 	var strURL []string
@@ -83,7 +83,7 @@ func MockGithubAPIPostRequest(URL string, state string) {
 	)
 }
 
-// MockGithubAPIPatchRequest creates a mock responder for PUT requests and sends back mock JSON data
+// MockGithubAPIPatchRequest creates a mock responder for a specific milestone endpoint and sends back mock JSON data
 func MockGithubAPIPatchRequest(URL string, state string, id string) {
 	json := MockGithubAPI(state)
 	var strURL []string
