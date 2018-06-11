@@ -114,6 +114,72 @@ func TestGitlabCreateMilestoneDataMonthly(t *testing.T) {
 	}
 }
 
+func TestGithubCreateMilestoneDataDailyWrongDueDate(t *testing.T) {
+	milestones, err := CreateMilestoneData(30, "daily", nil, "github")
+	if err != nil {
+		t.Error(err)
+	}
+	today := time.Now().Local().Format("2006-01-02")
+	expected := time.Now().Local().Format(time.RFC3339)
+	if milestones[today].DueDate == today {
+		t.Errorf("Expected %s, got %s", expected, milestones[today].DueDate)
+	}
+}
+
+func TestGithubCreateMilestoneDataWeeklyWrongDueDate(t *testing.T) {
+	milestones, err := CreateMilestoneData(20, "weekly", nil, "github")
+	if err != nil {
+		t.Error(err)
+	}
+	today := time.Now().Local()
+	lastDay := LastDayWeek(today)
+	year, week := lastDay.ISOWeek()
+	title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
+	expected := lastDay.Format(time.RFC3339)
+	if milestones[title].DueDate == title {
+		t.Errorf("Expected %s, got %s", expected, milestones[title].DueDate)
+	}
+}
+
+func TestGithubCreateMilestoneDataMonthlyWrongDueDate(t *testing.T) {
+	milestones, err := CreateMilestoneData(2, "monthly", nil, "github")
+	if err != nil {
+		t.Error(err)
+	}
+	currentMonth := time.Now().Local().Format("2006-01")
+	expected := LastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format(time.RFC3339)
+	if milestones[currentMonth].DueDate == currentMonth {
+		t.Errorf("Expected %s, got %s", expected, milestones[currentMonth].DueDate)
+	}
+}
+
+func TestGitlabCreateMilestoneDataWeeklyWrongDueDate(t *testing.T) {
+	milestones, err := CreateMilestoneData(20, "weekly", nil, "gitlab")
+	if err != nil {
+		t.Error(err)
+	}
+	today := time.Now().Local()
+	lastDay := LastDayWeek(today)
+	year, week := lastDay.ISOWeek()
+	title := strconv.Itoa(year) + "-w" + strconv.Itoa(week)
+	expected := lastDay.Format("2006-01-02")
+	if milestones[title].DueDate == title {
+		t.Errorf("Expected %s, got %s", expected, milestones[title].DueDate)
+	}
+}
+
+func TestGitlabCreateMilestoneDataMonthlyWrongDueDate(t *testing.T) {
+	milestones, err := CreateMilestoneData(2, "monthly", nil, "gitlab")
+	if err != nil {
+		t.Error(err)
+	}
+	currentMonth := time.Now().Local().Format("2006-01")
+	expected := LastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format("2006-01-02")
+	if milestones[currentMonth].DueDate == currentMonth {
+		t.Errorf("Expected %s, got %s", expected, milestones[currentMonth].DueDate)
+	}
+}
+
 func TestGithubCreateMilestoneDataDailyWrongInterval(t *testing.T) {
 	_, err := CreateMilestoneData(30, "2", nil, "github")
 	if err == nil {
