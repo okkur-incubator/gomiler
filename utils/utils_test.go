@@ -180,43 +180,15 @@ func TestGitlabCreateMilestoneDataMonthlyWrongDueDate(t *testing.T) {
 	}
 }
 
-func TestGithubCreateMilestoneDataDailyWrongInterval(t *testing.T) {
+func TestGithubCreateMilestoneDataWrongInterval(t *testing.T) {
 	_, err := CreateMilestoneData(30, "2", nil, "github")
 	if err == nil {
 		t.Errorf("Expected to get an error when interval invalid")
 	}
 }
 
-func TestGithubCreateMilestoneDataWeeklyWrongInterval(t *testing.T) {
-	_, err := CreateMilestoneData(20, "2", nil, "github")
-	if err == nil {
-		t.Errorf("Expected to get an error when interval invalid")
-	}
-}
-
-func TestGithubCreateMilestoneDataMonthlyWrongInterval(t *testing.T) {
-	_, err := CreateMilestoneData(2, "2", nil, "github")
-	if err == nil {
-		t.Errorf("Expected to get an error when interval invalid")
-	}
-}
-
-func TestGitlabCreateMilestoneDataDailyWrongInterval(t *testing.T) {
+func TestGitlabCreateMilestoneDataWrongInterval(t *testing.T) {
 	_, err := CreateMilestoneData(30, "2", nil, "gitlab")
-	if err == nil {
-		t.Errorf("Expected to get an error when interval invalid")
-	}
-}
-
-func TestGitlabCreateMilestoneDataWeeklyWrongInterval(t *testing.T) {
-	_, err := CreateMilestoneData(20, "2", nil, "gitlab")
-	if err == nil {
-		t.Errorf("Expected to get an error when interval invalid")
-	}
-}
-
-func TestGitlabCreateMilestoneDataMonthlyWrongInterval(t *testing.T) {
-	_, err := CreateMilestoneData(2, "2", nil, "gitlab")
 	if err == nil {
 		t.Errorf("Expected to get an error when interval invalid")
 	}
