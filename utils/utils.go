@@ -15,6 +15,7 @@ limitations under the License.
 package utils
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -47,7 +48,7 @@ func LastDayWeek(lastDay time.Time) time.Time {
 }
 
 // CreateMilestoneData creates new milestones with title and due date
-func CreateMilestoneData(advance int, interval string, logger *log.Logger, api string) map[string]Milestone {
+func CreateMilestoneData(advance int, interval string, logger *log.Logger, api string) (map[string]Milestone, error) {
 	today := time.Now().Local()
 	milestones := map[string]Milestone{}
 	switch interval {
@@ -102,9 +103,9 @@ func CreateMilestoneData(advance int, interval string, logger *log.Logger, api s
 			milestones[title] = m
 		}
 	default:
-		logger.Println("Error: Incorrect interval")
-		return milestones
+		err := fmt.Errorf("Error: Invalid interval")
+		return nil, err
 	}
 
-	return milestones
+	return milestones, nil
 }

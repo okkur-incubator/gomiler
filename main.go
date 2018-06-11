@@ -121,7 +121,10 @@ func main() {
 	var newBaseURL, projectID string
 	switch api {
 	case "gitlab":
-		milestoneData := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		milestoneData, err := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		if err != nil {
+			logger.Fatal(err)
+		}
 		newBaseURL = URL + "/api/v4"
 		projectID, err = gitlab.GetProjectID(newBaseURL, token, project, namespace)
 		if err != nil {
@@ -140,7 +143,10 @@ func main() {
 			logger.Println(err)
 		}
 	case "github":
-		milestoneData := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		milestoneData, err := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		if err != nil {
+			logger.Fatal(err)
+		}
 		newBaseURL = URL + "/repos/" + namespace + "/"
 		err = github.CreateAndDisplayNewMilestones(newBaseURL, token, project, milestoneData, logger)
 		if err != nil {

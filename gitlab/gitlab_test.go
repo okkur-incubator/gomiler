@@ -64,13 +64,16 @@ func TestGetProjectIDwithNonexistentProject(t *testing.T) {
 }
 
 func TestGitlabCreateAndDisplayNewMilestones(t *testing.T) {
-	milestoneData := utils.CreateMilestoneData(10, "daily", nil, "gitlab")
+	milestoneData, err := utils.CreateMilestoneData(10, "daily", nil, "gitlab")
+	if err != nil {
+		t.Error(err)
+	}
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockURL := "https://" + "gitlab.com" + "/api/v4"
 	MockGitlabAPIGetRequest(mockURL, "active")
 	MockGitlabAPIPostRequest(mockURL, "active")
-	err := CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, logger)
+	err = CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, logger)
 	if err != nil {
 		t.Error(err)
 	}

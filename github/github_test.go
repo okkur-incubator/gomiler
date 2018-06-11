@@ -27,13 +27,16 @@ var (
 )
 
 func TestGithubCreateAndDisplayNewMilestones(t *testing.T) {
-	milestoneData := utils.CreateMilestoneData(10, "daily", nil, "github")
+	milestoneData, err := utils.CreateMilestoneData(10, "daily", nil, "github")
+	if err != nil {
+		t.Error(err)
+	}
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	mockURL := "https://" + "api.github.com"
 	MockGithubAPIGetRequest(mockURL, "open")
 	MockGithubAPIPostRequest(mockURL, "open")
-	err := CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, logger)
+	err = CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, logger)
 	if err != nil {
 		t.Error(err)
 	}

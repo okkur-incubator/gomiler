@@ -38,7 +38,10 @@ func TestLastDayWeek(t *testing.T) {
 }
 
 func TestGithubCreateMilestoneDataDaily(t *testing.T) {
-	milestones := CreateMilestoneData(30, "daily", nil, "github")
+	milestones, err := CreateMilestoneData(30, "daily", nil, "github")
+	if err != nil {
+		t.Error(err)
+	}
 	today := time.Now().Local().Format("2006-01-02")
 	todayFormatted := time.Now().Local().Format(time.RFC3339)
 	if milestones[today].DueDate != todayFormatted {
@@ -47,7 +50,10 @@ func TestGithubCreateMilestoneDataDaily(t *testing.T) {
 }
 
 func TestGithubCreateMilestoneDataWeekly(t *testing.T) {
-	milestones := CreateMilestoneData(20, "weekly", nil, "github")
+	milestones, err := CreateMilestoneData(20, "weekly", nil, "github")
+	if err != nil {
+		t.Error(err)
+	}
 	today := time.Now().Local()
 	lastDay := LastDayWeek(today)
 	year, week := lastDay.ISOWeek()
@@ -59,7 +65,10 @@ func TestGithubCreateMilestoneDataWeekly(t *testing.T) {
 }
 
 func TestGithubCreateMilestoneDataMonthly(t *testing.T) {
-	milestones := CreateMilestoneData(2, "monthly", nil, "github")
+	milestones, err := CreateMilestoneData(2, "monthly", nil, "github")
+	if err != nil {
+		t.Error(err)
+	}
 	currentMonth := time.Now().Local().Format("2006-01")
 	expected := LastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format(time.RFC3339)
 	if milestones[currentMonth].DueDate != expected {
@@ -68,7 +77,10 @@ func TestGithubCreateMilestoneDataMonthly(t *testing.T) {
 }
 
 func TestGitlabCreateMilestoneDataDaily(t *testing.T) {
-	milestones := CreateMilestoneData(30, "daily", nil, "gitlab")
+	milestones, err := CreateMilestoneData(30, "daily", nil, "gitlab")
+	if err != nil {
+		t.Error(err)
+	}
 	today := time.Now().Local().Format("2006-01-02")
 	if milestones[today].DueDate != today {
 		t.Errorf("Expected %s, got %s", today, milestones[today].DueDate)
@@ -76,7 +88,10 @@ func TestGitlabCreateMilestoneDataDaily(t *testing.T) {
 }
 
 func TestGitlabCreateMilestoneDataWeekly(t *testing.T) {
-	milestones := CreateMilestoneData(20, "weekly", nil, "gitlab")
+	milestones, err := CreateMilestoneData(20, "weekly", nil, "gitlab")
+	if err != nil {
+		t.Error(err)
+	}
 	today := time.Now().Local()
 	lastDay := LastDayWeek(today)
 	year, week := lastDay.ISOWeek()
@@ -88,10 +103,55 @@ func TestGitlabCreateMilestoneDataWeekly(t *testing.T) {
 }
 
 func TestGitlabCreateMilestoneDataMonthly(t *testing.T) {
-	milestones := CreateMilestoneData(2, "monthly", nil, "gitlab")
+	milestones, err := CreateMilestoneData(2, "monthly", nil, "gitlab")
+	if err != nil {
+		t.Error(err)
+	}
 	currentMonth := time.Now().Local().Format("2006-01")
 	expected := LastDayMonth(time.Now().Local().Year(), int(time.Now().Local().Month()), time.UTC).Format("2006-01-02")
 	if milestones[currentMonth].DueDate != expected {
 		t.Errorf("Expected %s, got %s", expected, milestones[currentMonth].DueDate)
+	}
+}
+
+func TestGithubCreateMilestoneDataDailyWrongInterval(t *testing.T) {
+	_, err := CreateMilestoneData(30, "2", nil, "github")
+	if err == nil {
+		t.Errorf("Expected to get an error when interval invalid")
+	}
+}
+
+func TestGithubCreateMilestoneDataWeeklyWrongInterval(t *testing.T) {
+	_, err := CreateMilestoneData(20, "2", nil, "github")
+	if err == nil {
+		t.Errorf("Expected to get an error when interval invalid")
+	}
+}
+
+func TestGithubCreateMilestoneDataMonthlyWrongInterval(t *testing.T) {
+	_, err := CreateMilestoneData(2, "2", nil, "github")
+	if err == nil {
+		t.Errorf("Expected to get an error when interval invalid")
+	}
+}
+
+func TestGitlabCreateMilestoneDataDailyWrongInterval(t *testing.T) {
+	_, err := CreateMilestoneData(30, "2", nil, "gitlab")
+	if err == nil {
+		t.Errorf("Expected to get an error when interval invalid")
+	}
+}
+
+func TestGitlabCreateMilestoneDataWeeklyWrongInterval(t *testing.T) {
+	_, err := CreateMilestoneData(20, "2", nil, "gitlab")
+	if err == nil {
+		t.Errorf("Expected to get an error when interval invalid")
+	}
+}
+
+func TestGitlabCreateMilestoneDataMonthlyWrongInterval(t *testing.T) {
+	_, err := CreateMilestoneData(2, "2", nil, "gitlab")
+	if err == nil {
+		t.Errorf("Expected to get an error when interval invalid")
 	}
 }
