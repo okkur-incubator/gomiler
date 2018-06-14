@@ -38,7 +38,7 @@ func MockGitlabAPI(state string) []gitlabAPI {
 		if state == "active" {
 			mock.State = "active"
 		} else {
-			mock.State = "closed"				
+			mock.State = "closed"
 		}
 		mock.UpdatedAt = &currentTime
 		mock.CreatedAt = &currentTime
@@ -107,11 +107,32 @@ func MockGitlabAPIPutRequest(URL string, state string, id string) {
 }
 
 // MockPaginate creates a mock responder to return a byte slice
-func MockPaginate(url string, data []byte) {
+func MockPaginate(url string) int {
+	linkHeader := []string{
+		"<http://example.com/page=1>; rel=\"next\", <http://example.com/page=3>; rel=\"last\"",
+		"<http://example.com/page=3>; rel=\"next\", <http://example.com/page=3>; rel=\"last\"",
+		"<http://example.com/page=2>; rel=\"first\", <http://example.com/page=3>; rel=\"last\"",
+	}
+	links := []string{
+		"http://example.com/page=1",
+		"http://example.com/page=3",
+		"http://example.com/page=2",
+	}
+	for i, link := range linkHeader {
+		httpmock.RegisterResponder("GET", links[i],
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, "testing")
+				resp.Header.Set("Link", link)
+				return resp, nil
+			},
+		)
+	}
 	httpmock.RegisterResponder("GET", url,
 		func(req *http.Request) (*http.Response, error) {
-			resp := httpmock.NewBytesResponse(200, data)
+			resp := httpmock.NewStringResponse(200, "testing")
+			resp.Header.Set("Link", linkHeader[0])
 			return resp, nil
 		},
 	)
+	return len(linkHeader)
 }
