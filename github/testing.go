@@ -15,33 +15,33 @@ limitations under the License.
 package github
 
 import (
-	httpmock "gopkg.in/jarcoal/httpmock.v1"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
 // MockGithubAPI populates a []githubAPI with mock API data
 func MockGithubAPI(state string) []githubAPI {
 	currentTime := time.Now()
 	githubAPImock := []githubAPI{}
-	mock := githubAPI{}
 	for i := 0; i < 10; i++ {
+		mock := githubAPI{}
 		mock.ID = i
 		mock.Title = "test" + strconv.Itoa(i)
 		mock.Description = "test" + strconv.Itoa(i)
-		if state == "open" {
-			mock.State = "open"
-		} else {
-			mock.State = "closed"
-		}
 		mock.CreatedAt = &currentTime
 		mock.UpdatedAt = &currentTime
 		mock.StartDate = "test" + strconv.Itoa(i)
 		mock.DueDate = "test" + strconv.Itoa(i)
 		mock.Number = i
-
+		if state == "open" {
+			mock.State = "open"
+		} else {
+			mock.State = "closed"
+		}
 		githubAPImock = append(githubAPImock, mock)
 	}
 

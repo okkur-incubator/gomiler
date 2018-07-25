@@ -15,16 +15,15 @@ limitations under the License.
 package github
 
 import (
-	"github.com/okkur/gomiler/utils"
-	httpmock "gopkg.in/jarcoal/httpmock.v1"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/okkur/gomiler/utils"
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
-var (
-	logger = log.New(os.Stderr, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-)
+var logger = log.New(os.Stderr, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 func TestGithubCreateAndDisplayNewMilestones(t *testing.T) {
 	milestoneData, err := utils.CreateMilestoneData(10, "daily", nil, "github")

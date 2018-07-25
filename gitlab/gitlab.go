@@ -17,8 +17,6 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/okkur/gomiler/utils"
-	"github.com/peterhellberg/link"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,6 +25,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/okkur/gomiler/utils"
+	"github.com/peterhellberg/link"
 )
 
 // GitlabAPI struct
@@ -149,8 +150,13 @@ func getInactiveMilestones(baseURL string, token string, project string) ([]gitl
 }
 
 // ReactivateClosedMilestones reactivates closed milestones that occur in the future
-func ReactivateClosedMilestones(milestones map[string]utils.Milestone, baseURL string, token string,
-	project string, logger *log.Logger) (map[string]utils.Milestone, error) {
+func ReactivateClosedMilestones(
+	milestones map[string]utils.Milestone,
+	baseURL string,
+	token string,
+	project string,
+	logger *log.Logger,
+) (map[string]utils.Milestone, error) {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {

@@ -15,8 +15,9 @@ limitations under the License.
 package main
 
 import (
-	httpmock "gopkg.in/jarcoal/httpmock.v1"
 	"testing"
+
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
 func TestGithubCheckAPI(t *testing.T) {

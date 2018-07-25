@@ -18,15 +18,16 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	github "github.com/okkur/gomiler/github"
-	gitlab "github.com/okkur/gomiler/gitlab"
-	"github.com/okkur/gomiler/utils"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+
+	github "github.com/okkur/gomiler/github"
+	gitlab "github.com/okkur/gomiler/gitlab"
+	"github.com/okkur/gomiler/utils"
 )
 
 // Initialization of logging variable

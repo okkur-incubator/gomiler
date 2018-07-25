@@ -17,8 +17,6 @@ package github
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/okkur/gomiler/utils"
-	"github.com/peterhellberg/link"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,6 +25,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/okkur/gomiler/utils"
+	"github.com/peterhellberg/link"
 )
 
 // GithubAPI struct
@@ -113,8 +114,12 @@ func getInactiveMilestones(baseURL string, token string, project string) ([]gith
 }
 
 // ReactivateClosedMilestones reactivates closed milestones that occur in the future
-func ReactivateClosedMilestones(milestones map[string]utils.Milestone, baseURL string, token string,
-	project string) (map[string]utils.Milestone, error) {
+func ReactivateClosedMilestones(
+	milestones map[string]utils.Milestone,
+	baseURL string,
+	token string,
+	project string,
+) (map[string]utils.Milestone, error) {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {

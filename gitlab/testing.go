@@ -15,19 +15,20 @@ limitations under the License.
 package gitlab
 
 import (
-	httpmock "gopkg.in/jarcoal/httpmock.v1"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
 // MockGitlabAPI populates a []gitlabAPI with mock API data
 func MockGitlabAPI(state string) []gitlabAPI {
 	currentTime := time.Now()
 	gitlabAPImock := []gitlabAPI{}
-	mock := gitlabAPI{}
 	for i := 0; i < 10; i++ {
+		mock := gitlabAPI{}
 		mock.ID = i
 		mock.Iid = i
 		mock.ProjectID = 1
@@ -35,11 +36,6 @@ func MockGitlabAPI(state string) []gitlabAPI {
 		mock.Description = "test" + strconv.Itoa(i)
 		mock.StartDate = "test" + strconv.Itoa(i)
 		mock.DueDate = "test" + strconv.Itoa(i)
-		if state == "active" {
-			mock.State = "active"
-		} else {
-			mock.State = "closed"
-		}
 		mock.UpdatedAt = &currentTime
 		mock.CreatedAt = &currentTime
 		mock.Name = "test" + strconv.Itoa(i)
@@ -48,7 +44,11 @@ func MockGitlabAPI(state string) []gitlabAPI {
 		mock.NameSpace.Path = "test" + strconv.Itoa(i)
 		mock.NameSpace.Kind = "test" + strconv.Itoa(i)
 		mock.NameSpace.FullPath = "test" + strconv.Itoa(i)
-
+		if state == "active" {
+			mock.State = "active"
+		} else {
+			mock.State = "closed"
+		}
 		gitlabAPImock = append(gitlabAPImock, mock)
 	}
 

@@ -16,11 +16,12 @@ package gitlab
 
 import (
 	"encoding/json"
-	"github.com/okkur/gomiler/utils"
-	httpmock "gopkg.in/jarcoal/httpmock.v1"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/okkur/gomiler/utils"
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
 var (
