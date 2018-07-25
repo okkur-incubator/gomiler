@@ -68,18 +68,10 @@ func TestGitlabCheckAPIwithInvalidToken(t *testing.T) {
 	}
 }
 
-func TestValidateGithubBaseURLScheme(t *testing.T) {
+func TestValidateBaseURLScheme(t *testing.T) {
 	URL := "api.github.com"
 	baseURL, err := validateBaseURLScheme(URL)
-	if baseURL != "https://api.github.com" && err != nil {
-		t.Errorf("Expected %s, got %s", "https://api.github.com", baseURL)
-	}
-}
-
-func TestValidateGitlabBaseURLScheme(t *testing.T) {
-	URL := "gitlab.com"
-	baseURL, err := validateBaseURLScheme(URL)
-	if baseURL != "https://gitlab.com" && err != nil {
-		t.Errorf("Expected %s, got %s", "https://gitlab.com", baseURL)
+	if baseURL != "https:/example.com" && err != nil {
+		t.Errorf("Expected %s, got %s", "https://example.com", baseURL)
 	}
 }
