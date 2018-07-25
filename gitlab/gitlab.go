@@ -182,7 +182,7 @@ func ReactivateClosedMilestones(
 		defer resp.Body.Close()
 	}
 	// copy map of milestones with states changed to active for testing purposes
-	reactivatedMilestones := map[string]utils.Milestone{}
+	reactivatedMilestones := make(map[string]utils.Milestone, len(milestones))
 	for k, v := range milestones {
 		v.State = "active"
 		reactivatedMilestones[k] = v
