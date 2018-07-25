@@ -120,9 +120,11 @@ func main() {
 
 	// Calling getProjectID
 	var newBaseURL, projectID string
+
+	interval = strings.ToLower(interval)
 	switch api {
 	case "gitlab":
-		milestoneData, err := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		milestoneData, err := utils.CreateMilestoneData(advance, interval, logger, api)
 		if err != nil {
 			logger.Fatal(err)
 		}
@@ -144,7 +146,7 @@ func main() {
 			logger.Println(err)
 		}
 	case "github":
-		milestoneData, err := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		milestoneData, err := utils.CreateMilestoneData(advance, interval, logger, api)
 		if err != nil {
 			logger.Fatal(err)
 		}
