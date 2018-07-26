@@ -69,7 +69,7 @@ func TestGitlabCheckAPIwithInvalidToken(t *testing.T) {
 }
 
 func TestValidateBaseURLScheme(t *testing.T) {
-	URL := "api.github.com"
+	URL := "example.com"
 	baseURL, err := validateBaseURLScheme(URL)
 	if baseURL != "https:/example.com" && err != nil {
 		t.Errorf("Expected %s, got %s", "https://example.com", baseURL)
