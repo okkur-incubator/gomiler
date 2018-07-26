@@ -75,3 +75,11 @@ func TestValidateBaseURLScheme(t *testing.T) {
 		t.Errorf("Expected %s, got %s", "https://example.com", baseURL)
 	}
 }
+
+func TestValidateBaseURLSchemeWhenSchemeAlreadyExists(t *testing.T) {
+	URL := "https://example.com"
+	baseURL, err := validateBaseURLScheme(URL)
+	if baseURL != "https:/example.com" && err != nil {
+		t.Errorf("Expected %s, got %s", "https://example.com", baseURL)
+	}
+}
