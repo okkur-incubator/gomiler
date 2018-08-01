@@ -15,6 +15,7 @@ limitations under the License.
 package main
 
 import (
+	"net/http"
 	"testing"
 
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
@@ -82,4 +83,55 @@ func TestValidateBaseURLSchemeWhenSchemeAlreadyExists(t *testing.T) {
 	if baseURL != "https://example.com" && err != nil {
 		t.Errorf("Expected %s, got %s", "https://example.com", baseURL)
 	}
+}
+
+func TestPaginate(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	pages := mockPaginate("https://example.com")
+	apiData, err := paginate("https://example.com", "token")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(apiData) != pages {
+		t.Errorf("Expected %d, got %d", pages, len(apiData))
+	}
+}
+
+func TestPaginateFailWhenURLisWrong(t *testing.T) {
+	_, err := paginate("https://example.c_m", "token")
+	if err == nil {
+		t.Errorf("Expected to get an error when url is wrong")
+	}
+}
+
+// MockPaginate creates a mock responder to return a byte slice
+func mockPaginate(url string) int {
+	linkHeader := []string{
+		"<http://example.com/page=1>; rel=\"next\", <http://example.com/page=3>; rel=\"last\"",
+		"<http://example.com/page=3>; rel=\"next\", <http://example.com/page=3>; rel=\"last\"",
+		"<http://example.com/page=2>; rel=\"first\", <http://example.com/page=3>; rel=\"last\"",
+	}
+	links := []string{
+		"http://example.com/page=1",
+		"http://example.com/page=3",
+		"http://example.com/page=2",
+	}
+	for i, link := range linkHeader {
+		httpmock.RegisterResponder("GET", links[i],
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, "testing")
+				resp.Header.Set("Link", link)
+				return resp, nil
+			},
+		)
+	}
+	httpmock.RegisterResponder("GET", url,
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, "testing")
+			resp.Header.Set("Link", linkHeader[0])
+			return resp, nil
+		},
+	)
+	return len(linkHeader)
 }
