@@ -15,17 +15,19 @@ limitations under the License.
 package main
 
 import (
-	"github.com/okkur/gomiler/utils"
+	"errors"
 	"flag"
 	"fmt"
-	github "github.com/okkur/gomiler/github"
-	gitlab "github.com/okkur/gomiler/gitlab"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+
+	github "github.com/okkur/gomiler/github"
+	gitlab "github.com/okkur/gomiler/gitlab"
+	"github.com/okkur/gomiler/utils"
 )
 
 // Initialization of logging variable
@@ -43,6 +45,7 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		"gitlab": gitlabURL,
 		"github": githubURL,
 	}
+	resp := &http.Response{}
 	client := &http.Client{}
 	for k, v := range m {
 		req, err := http.NewRequest("GET", v, nil)
@@ -56,7 +59,7 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
-		resp, err := client.Do(req)
+		resp, err = client.Do(req)
 		if err != nil {
 			return "", err
 		}
@@ -64,6 +67,14 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		if resp.StatusCode == 200 {
 			return k, nil
 		}
+		if resp.StatusCode == 403 {
+			return "", errors.New("Provided token is invalid. Access Denied.")
+		}
+	}
+	// Check for 404 error returned from GitHub API if project not found.
+	// GitLab uses the API version page as a check, so a project not found error is returned in GetProjectID instead.
+	if resp.StatusCode == 404 {
+		return "", fmt.Errorf("project %s not found", project)
 	}
 	return "", fmt.Errorf("Error: could not access GitLab or GitHub APIs")
 }
@@ -109,9 +120,14 @@ func main() {
 
 	// Calling getProjectID
 	var newBaseURL, projectID string
+
+	interval = strings.ToLower(interval)
 	switch api {
 	case "gitlab":
-		milestoneData := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		milestoneData, err := utils.CreateMilestoneData(advance, interval, logger, api)
+		if err != nil {
+			logger.Fatal(err)
+		}
 		newBaseURL = URL + "/api/v4"
 		projectID, err = gitlab.GetProjectID(newBaseURL, token, project, namespace)
 		if err != nil {
@@ -125,12 +141,15 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		err = gitlab.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID, logger)
+		_, err = gitlab.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, projectID, logger)
 		if err != nil {
 			logger.Println(err)
 		}
 	case "github":
-		milestoneData := utils.CreateMilestoneData(advance, strings.ToLower(interval), logger, api)
+		milestoneData, err := utils.CreateMilestoneData(advance, interval, logger, api)
+		if err != nil {
+			logger.Fatal(err)
+		}
 		newBaseURL = URL + "/repos/" + namespace + "/"
 		err = github.CreateAndDisplayNewMilestones(newBaseURL, token, project, milestoneData, logger)
 		if err != nil {
@@ -140,7 +159,7 @@ func main() {
 		if err != nil {
 			logger.Println(err)
 		}
-		err = github.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, project)
+		_, err = github.ReactivateClosedMilestones(closedMilestones, newBaseURL, token, project)
 		if err != nil {
 			logger.Println(err)
 		}

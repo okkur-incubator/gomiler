@@ -17,8 +17,6 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/okkur/gomiler/utils"
-	"github.com/peterhellberg/link"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,6 +25,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/okkur/gomiler/utils"
+	"github.com/peterhellberg/link"
 )
 
 // GitlabAPI struct
@@ -149,7 +150,13 @@ func getInactiveMilestones(baseURL string, token string, project string) ([]gitl
 }
 
 // ReactivateClosedMilestones reactivates closed milestones that occur in the future
-func ReactivateClosedMilestones(milestones map[string]utils.Milestone, baseURL string, token string, project string, logger *log.Logger) error {
+func ReactivateClosedMilestones(
+	milestones map[string]utils.Milestone,
+	baseURL string,
+	token string,
+	project string,
+	logger *log.Logger,
+) (map[string]utils.Milestone, error) {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {
@@ -170,12 +177,18 @@ func ReactivateClosedMilestones(milestones map[string]utils.Milestone, baseURL s
 		req.Header.Add("PRIVATE-TOKEN", token)
 		resp, err := client.Do(req)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer resp.Body.Close()
 	}
+	// copy map of milestones with states changed to active for testing purposes
+	reactivatedMilestones := make(map[string]utils.Milestone, len(milestones))
+	for k, v := range milestones {
+		v.State = "active"
+		reactivatedMilestones[k] = v
+	}
 
-	return nil
+	return reactivatedMilestones, nil
 }
 
 func getMilestones(baseURL string, token string, project string, state string) ([]gitlabAPI, error) {

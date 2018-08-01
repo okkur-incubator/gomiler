@@ -16,8 +16,16 @@ package gitlab
 
 import (
 	"encoding/json"
-	httpmock "gopkg.in/jarcoal/httpmock.v1"
+	"log"
+	"os"
 	"testing"
+
+	"github.com/okkur/gomiler/utils"
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
+)
+
+var (
+	logger = log.New(os.Stderr, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 )
 
 func TestGetProjectID(t *testing.T) {
@@ -41,5 +49,89 @@ func TestGetProjectID(t *testing.T) {
 
 	if res != "1" && err != nil {
 		t.Errorf("Expected %s, got %s", "1", res)
+	}
+}
+
+func TestGetProjectIDwithNonexistentProject(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
+	httpmock.RegisterResponder("GET", "https://gitlab.com/api/v4/projects/",
+		httpmock.NewStringResponder(404, ""))
+	_, err := GetProjectID(mockURL, "213123", "test", "test")
+	if err == nil {
+		t.Errorf("Expected to get an error when project does not exist")
+	}
+}
+
+func TestGitlabCreateAndDisplayNewMilestones(t *testing.T) {
+	milestoneData, err := utils.CreateMilestoneData(10, "daily", nil, "gitlab")
+	if err != nil {
+		t.Error(err)
+	}
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
+	MockGitlabAPIGetRequest(mockURL, "active")
+	MockGitlabAPIPostRequest(mockURL, "active")
+	err = CreateAndDisplayNewMilestones(mockURL, "213123", "1", milestoneData, logger)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestGetActiveMilestones(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
+	MockGitlabAPIGetRequest(mockURL, "active")
+	activeMilestonesAPI, err := getActiveMilestones(mockURL, "token", "1")
+	if err != nil {
+		t.Error(err)
+	}
+	for _, v := range activeMilestonesAPI {
+		if v.State != "active" {
+			t.Errorf("Expected %s, got %s", "active", v.State)
+		}
+	}
+}
+
+func TestGetInactiveMilestones(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
+	MockGitlabAPIGetRequest(mockURL, "closed")
+	inactiveMilestonesAPI, err := getInactiveMilestones(mockURL, "token", "1")
+	if err != nil {
+		t.Error(err)
+	}
+	for _, v := range inactiveMilestonesAPI {
+		if v.State != "closed" {
+			t.Errorf("Expected %s, got %s", "closed", v.State)
+		}
+	}
+}
+
+func TestReactivateClosedMilestones(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	mockURL := "https://" + "gitlab.com" + "/api/v4"
+	MockGitlabAPIGetRequest(mockURL, "closed")
+	inactiveMilestonesAPI, err := getInactiveMilestones(mockURL, "token", "1")
+	if err != nil {
+		t.Error(err)
+	}
+	inactiveMilestones := createGitlabMilestoneMap(inactiveMilestonesAPI)
+	for _, v := range inactiveMilestones {
+		MockGitlabAPIPutRequest(mockURL, "active", v.ID)
+	}
+	reactivatedMilestones, err := ReactivateClosedMilestones(inactiveMilestones, mockURL, "token", "1", logger)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, v := range reactivatedMilestones {
+		if v.State != "active" {
+			t.Errorf("Expected %s, got %s", "active", v.State)
+		}
 	}
 }

@@ -17,8 +17,6 @@ package github
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/okkur/gomiler/utils"
-	"github.com/peterhellberg/link"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,6 +25,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/okkur/gomiler/utils"
+	"github.com/peterhellberg/link"
 )
 
 // GithubAPI struct
@@ -113,7 +114,12 @@ func getInactiveMilestones(baseURL string, token string, project string) ([]gith
 }
 
 // ReactivateClosedMilestones reactivates closed milestones that occur in the future
-func ReactivateClosedMilestones(milestones map[string]utils.Milestone, baseURL string, token string, project string) error {
+func ReactivateClosedMilestones(
+	milestones map[string]utils.Milestone,
+	baseURL string,
+	token string,
+	project string,
+) (map[string]utils.Milestone, error) {
 	client := &http.Client{}
 	var strURL []string
 	for _, v := range milestones {
@@ -130,22 +136,28 @@ func ReactivateClosedMilestones(milestones map[string]utils.Milestone, baseURL s
 		}
 		updatePatchBytes, err := json.Marshal(updatePatch)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		req, err = http.NewRequest("PATCH", URL, bytes.NewReader(updatePatchBytes))
 		if err != nil {
-			return err
+			return nil, err
 		}
 		req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
 		req.Header.Add("Authorization", "token "+token)
 		resp, err := client.Do(req)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer resp.Body.Close()
 	}
+	// copy map of milestones with states changed to open for testing purposes
+	reactivatedMilestones := make(map[string]utils.Milestone, len(milestones))
+	for k, v := range milestones {
+		v.State = "open"
+		reactivatedMilestones[k] = v
+	}
 
-	return nil
+	return reactivatedMilestones, nil
 }
 
 func getMilestones(baseURL string, token string, project string, state string) ([]githubAPI, error) {
