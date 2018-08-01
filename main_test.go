@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/okkur/gomiler/github"
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
@@ -89,7 +90,7 @@ func TestPaginate(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	pages := mockPaginate("https://example.com")
-	apiData, err := paginate("https://example.com", "token")
+	apiData, err := github.Paginate("https://example.com", "token")
 	if err != nil {
 		t.Error(err)
 	}
@@ -99,7 +100,7 @@ func TestPaginate(t *testing.T) {
 }
 
 func TestPaginateFailWhenURLisWrong(t *testing.T) {
-	_, err := paginate("https://example.c_m", "token")
+	_, err := github.Paginate("https://example.c_m", "token")
 	if err == nil {
 		t.Errorf("Expected to get an error when url is wrong")
 	}

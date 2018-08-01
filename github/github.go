@@ -59,7 +59,8 @@ func CreateGithubMilestoneMap(githubAPI []githubAPI) map[string]utils.Milestone 
 	return milestones
 }
 
-func paginate(URL string, token string) ([][]byte, error) {
+// Paginate checks the linkHeader returned by the API and if a next page is present, appends the data to a [][]byte
+func Paginate(URL string, token string) ([][]byte, error) {
 	apiData := make([][]byte, 1)
 	client := &http.Client{}
 	paginate := true
@@ -171,7 +172,7 @@ func getMilestones(baseURL string, token string, project string, state string) (
 	q.Set("state", state)
 	u.RawQuery = q.Encode()
 	newURL = u.String()
-	apiData, err := paginate(newURL, token)
+	apiData, err := Paginate(newURL, token)
 	if err != nil {
 		return nil, err
 	}
