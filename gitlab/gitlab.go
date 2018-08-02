@@ -98,7 +98,7 @@ func createGitlabMilestoneMap(gitlabAPI []gitlabAPI) map[string]utils.Milestone 
 
 func paginate(URL string, token string) ([][]byte, error) {
 	apiData := make([][]byte, 1)
-	client := &http.Client{}
+	client := http.Client{}
 	paginate := true
 	for paginate == true {
 		paginate = false
@@ -157,7 +157,7 @@ func ReactivateClosedMilestones(
 	project string,
 	logger *log.Logger,
 ) (map[string]utils.Milestone, error) {
-	client := &http.Client{}
+	client := http.Client{}
 	var strURL []string
 	for _, v := range milestones {
 		milestoneID := v.ID
@@ -216,7 +216,7 @@ func getMilestones(baseURL string, token string, project string, state string) (
 }
 
 func createMilestones(baseURL string, token string, project string, milestones map[string]utils.Milestone) error {
-	client := &http.Client{}
+	client := http.Client{}
 	var strURL []string
 	strURL = []string{baseURL, "/projects/", project, "/milestones"}
 	URL := strings.Join(strURL, "")

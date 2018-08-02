@@ -61,7 +61,7 @@ func CreateGithubMilestoneMap(githubAPI []githubAPI) map[string]utils.Milestone 
 
 func paginate(URL string, token string) ([][]byte, error) {
 	apiData := make([][]byte, 1)
-	client := &http.Client{}
+	client := http.Client{}
 	paginate := true
 	for paginate == true {
 		paginate = false
@@ -120,7 +120,7 @@ func ReactivateClosedMilestones(
 	token string,
 	project string,
 ) (map[string]utils.Milestone, error) {
-	client := &http.Client{}
+	client := http.Client{}
 	var strURL []string
 	for _, v := range milestones {
 		milestoneID := strconv.Itoa(v.Number)
@@ -185,7 +185,7 @@ func getMilestones(baseURL string, token string, project string, state string) (
 }
 
 func createMilestones(baseURL string, token string, project string, milestones map[string]utils.Milestone) error {
-	client := &http.Client{}
+	client := http.Client{}
 	var strURL []string
 	strURL = []string{baseURL, project, "/milestones"}
 	URL := strings.Join(strURL, "")
