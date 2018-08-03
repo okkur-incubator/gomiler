@@ -45,8 +45,8 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		"gitlab": gitlabURL,
 		"github": githubURL,
 	}
-	resp := &http.Response{}
-	client := &http.Client{}
+	var resp *http.Response
+	var client http.Client
 	for k, v := range m {
 		req, err := http.NewRequest("GET", v, nil)
 		if err != nil {
