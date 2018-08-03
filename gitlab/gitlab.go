@@ -17,7 +17,6 @@ package gitlab
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -27,7 +26,6 @@ import (
 	"time"
 
 	"github.com/okkur/gomiler/utils"
-	"github.com/peterhellberg/link"
 )
 
 // GitlabAPI struct
@@ -60,7 +58,8 @@ func GetProjectID(baseURL string, token string, projectname string, namespace st
 	q := u.Query()
 	q.Set("search", projectname)
 	u.RawQuery = q.Encode()
-	apiData, err := paginate(u.String(), token)
+	api := "gitlab"
+	apiData, err := utils.Paginate(u.String(), api, token)
 	if err != nil {
 		return "", err
 	}
@@ -94,46 +93,6 @@ func createGitlabMilestoneMap(gitlabAPI []gitlabAPI) map[string]utils.Milestone 
 	}
 
 	return milestones
-}
-
-func paginate(URL string, token string) ([][]byte, error) {
-	apiData := make([][]byte, 1)
-	client := http.Client{}
-	paginate := true
-	for paginate == true {
-		paginate = false
-		req, err := http.NewRequest("GET", URL, nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Add("PRIVATE-TOKEN", token)
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		respByte, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		apiData = append(apiData, respByte)
-		defer resp.Body.Close()
-
-		// Retrieve next page header
-		linkHeader := resp.Header.Get("Link")
-		parsedHeader := link.Parse(linkHeader)
-		for _, elem := range parsedHeader {
-			if elem.Rel != "next" {
-				continue
-			}
-
-			// Prevent break and modify URL for next iteration
-			if elem.Rel == "next" {
-				URL = elem.URI
-				paginate = true
-			}
-		}
-	}
-	return apiData, nil
 }
 
 // Get and return currently active milestones
@@ -202,7 +161,8 @@ func getMilestones(baseURL string, token string, project string, state string) (
 	q.Set("state", state)
 	u.RawQuery = q.Encode()
 	newURL = u.String()
-	apiData, err := paginate(newURL, token)
+	api := "gitlab"
+	apiData, err := utils.Paginate(newURL, api, token)
 	if err != nil {
 		return nil, err
 	}
