@@ -99,7 +99,7 @@ func ReactivateClosedMilestones(
 		if err != nil {
 			return nil, err
 		}
-		req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
+		req.Header.Add("Accept", "application/vnd.github.v3+json")
 		req.Header.Add("Authorization", "token "+token)
 		resp, err := client.Do(req)
 		if err != nil {
@@ -165,7 +165,7 @@ func createMilestones(baseURL string, token string, project string, milestones m
 		if err != nil {
 			return err
 		}
-		req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
+		req.Header.Add("Accept", "application/vnd.github.v3+json")
 		req.Header.Add("Authorization", "token "+token)
 		resp, err := client.Do(req)
 		if err != nil {
