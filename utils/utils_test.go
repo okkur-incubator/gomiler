@@ -15,9 +15,12 @@ limitations under the License.
 package utils
 
 import (
+	"net/http"
 	"strconv"
 	"testing"
 	"time"
+
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
 func TestLastDayMonth(t *testing.T) {
@@ -192,4 +195,55 @@ func TestGitlabCreateMilestoneDataWrongInterval(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected to get an error when interval invalid")
 	}
+}
+
+func TestPaginate(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	pages := MockPaginate("https://example.com")
+	apiData, err := Paginate("https://example.com", "github", "token")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(apiData) != pages {
+		t.Errorf("Expected %d, got %d", pages, len(apiData))
+	}
+}
+
+func TestPaginateFailWhenURLisWrong(t *testing.T) {
+	_, err := Paginate("https://example.c_m", "github", "token")
+	if err == nil {
+		t.Errorf("Expected to get an error when url is wrong")
+	}
+}
+
+// MockPaginate creates a mock responder to return a byte slice
+func MockPaginate(url string) int {
+	linkHeader := []string{
+		"<http://example.com/page=1>; rel=\"next\", <http://example.com/page=3>; rel=\"last\"",
+		"<http://example.com/page=3>; rel=\"next\", <http://example.com/page=3>; rel=\"last\"",
+		"<http://example.com/page=2>; rel=\"first\", <http://example.com/page=3>; rel=\"last\"",
+	}
+	links := []string{
+		"http://example.com/page=1",
+		"http://example.com/page=3",
+		"http://example.com/page=2",
+	}
+	for i, link := range linkHeader {
+		httpmock.RegisterResponder("GET", links[i],
+			func(req *http.Request) (*http.Response, error) {
+				resp := httpmock.NewStringResponse(200, "testing")
+				resp.Header.Set("Link", link)
+				return resp, nil
+			},
+		)
+	}
+	httpmock.RegisterResponder("GET", url,
+		func(req *http.Request) (*http.Response, error) {
+			resp := httpmock.NewStringResponse(200, "testing")
+			resp.Header.Set("Link", linkHeader[0])
+			return resp, nil
+		},
+	)
+	return len(linkHeader)
 }

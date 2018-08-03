@@ -41,26 +41,6 @@ func TestGithubCreateAndDisplayNewMilestones(t *testing.T) {
 	}
 }
 
-func TestPaginate(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-	pages := MockPaginate("https://example.com")
-	apiData, err := paginate("https://example.com", "token")
-	if err != nil {
-		t.Error(err)
-	}
-	if len(apiData) != pages {
-		t.Errorf("Expected %d, got %d", pages, len(apiData))
-	}
-}
-
-func TestPaginateFailWhenURLisWrong(t *testing.T) {
-	_, err := paginate("https://example.c_m", "token")
-	if err == nil {
-		t.Errorf("Expected to get an error when url is wrong")
-	}
-}
-
 func TestGetActiveMilestones(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
