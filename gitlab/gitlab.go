@@ -58,8 +58,7 @@ func GetProjectID(baseURL string, token string, projectname string, namespace st
 	q := u.Query()
 	q.Set("search", projectname)
 	u.RawQuery = q.Encode()
-	api := "gitlab"
-	apiData, err := utils.Paginate(u.String(), api, token)
+	apiData, err := utils.Paginate(u.String(), "gitlab", token)
 	if err != nil {
 		return "", err
 	}
@@ -161,8 +160,7 @@ func getMilestones(baseURL string, token string, project string, state string) (
 	q.Set("state", state)
 	u.RawQuery = q.Encode()
 	newURL = u.String()
-	api := "gitlab"
-	apiData, err := utils.Paginate(newURL, api, token)
+	apiData, err := utils.Paginate(newURL, "gitlab", token)
 	if err != nil {
 		return nil, err
 	}
