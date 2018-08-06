@@ -56,7 +56,7 @@ func checkAPI(baseURL string, token string, namespace string, project string) (s
 		case "gitlab":
 			req.Header.Add("PRIVATE-TOKEN", token)
 		case "github":
-			req.Header.Add("Accept", "application/vnd.github.inertia-preview+json")
+			req.Header.Add("Accept", "application/vnd.github.v3+json")
 			req.Header.Add("Authorization", "token "+token)
 		}
 		resp, err = client.Do(req)

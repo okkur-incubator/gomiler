@@ -16,9 +16,13 @@ package utils
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/peterhellberg/link"
 )
 
 // Milestone struct to be used for milestone queries
@@ -108,4 +112,51 @@ func CreateMilestoneData(advance int, interval string, logger *log.Logger, api s
 	}
 
 	return milestones, nil
+}
+
+// Paginate checks the linkHeader returned by the API and if a next page is present, appends the data to a [][]byte
+func Paginate(URL string, api string, token string) ([][]byte, error) {
+	apiData := make([][]byte, 1)
+	client := http.Client{}
+	paginate := true
+	for paginate == true {
+		paginate = false
+		req, err := http.NewRequest("GET", URL, nil)
+		if err != nil {
+			return nil, err
+		}
+		switch api {
+		case "gitlab":
+			req.Header.Add("PRIVATE-TOKEN", token)
+		case "github":
+			req.Header.Add("Accept", "application/vnd.github.v3+json")
+			req.Header.Add("Authorization", "token "+token)
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		respByte, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		apiData = append(apiData, respByte)
+		defer resp.Body.Close()
+
+		// Retrieve next page header
+		linkHeader := resp.Header.Get("Link")
+		parsedHeader := link.Parse(linkHeader)
+		for _, elem := range parsedHeader {
+			if elem.Rel != "next" {
+				continue
+			}
+
+			// Prevent break and modify URL for next iteration
+			if elem.Rel == "next" {
+				URL = elem.URI
+				paginate = true
+			}
+		}
+	}
+	return apiData, nil
 }
