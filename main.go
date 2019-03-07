@@ -25,9 +25,9 @@ import (
 	"os"
 	"strings"
 
-	github "github.com/okkur/gomiler/github"
-	gitlab "github.com/okkur/gomiler/gitlab"
-	"github.com/okkur/gomiler/utils"
+	github "github.com/okkur-incubator/gomiler/github"
+	gitlab "github.com/okkur-incubator/gomiler/gitlab"
+	"github.com/okkur-incubator/gomiler/utils"
 )
 
 // Initialization of logging variable

@@ -6,7 +6,7 @@ project:
   oneLiner: "Milestone generation for platforms including GitLab and GitHub"
   description: |
     Generate milestone for ToDo lists, sprints or more.
-  version: "v0.2.0"
+  version: "v0.3.0"
   mainLicense: "apache2"
   docsLicense: "CCBySa"
 
@@ -31,34 +31,30 @@ contributionLinks:
   starterIssues: "https://github.com/okkur/gomiler/labels/starter%20issue"
 
 emails:
-  commercialSupport: "support@okkur.io"
-  security: "security@okkur.io"
-  coc: "coc@okkur.io"
+  commercialSupport: "support@okkur.org"
+  security: "security@okkur.org"
+  coc: "coc@okkur.org"
 
 copyright:
-  year: "2017"
+  year: "2019"
 
 cla:
-  copyrightHolder: "Michael Grosser"
+  copyrightHolder: "nzt.ventures GmbH"
 
 maintainers:
   - name: "Michael Grosser"
     nick: "stp-ip"
-  - name: "Adeel Hussain"
-    nick: "adeilh"
-  - name: "David Briesz"
-    nick: "dbriesz"
 
 repo:
-  link: "https://github.com/okkur/gomiler/"
+  link: "https://github.com/okkur-incubator/gomiler/"
   type: "Github"
 
 badges:
   - image: "https://img.shields.io/badge/state-stable-green.svg"
     alt: "state"
-  - image: "https://img.shields.io/github/release/okkur/gomiler.svg"
-    link: "https://github.com/okkur/gomiler/releases"
+  - image: "https://img.shields.io/github/release/okkur-incubator/gomiler.svg"
+    link: "https://github.com/okkur/gomiler-incubator/releases"
     alt: "release"
-  - image: "https://img.shields.io/github/license/okkur/gomiler.svg"
+  - image: "https://img.shields.io/github/license/okkur-incubator/gomiler.svg"
     link: "LICENSE"
     alt: "license"

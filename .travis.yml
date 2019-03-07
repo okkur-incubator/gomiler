@@ -1,6 +1,7 @@
-language: go
+language: minimal
 
-go:
-  - 1.8.x
-  - 1.9.x
+services:
+  - docker
 
+script:
+  - make docker-test
