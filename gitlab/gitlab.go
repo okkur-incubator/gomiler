@@ -183,7 +183,7 @@ func createMilestones(baseURL string, token string, project string, milestones m
 		var req *http.Request
 		var err error
 
-		params.Set("dueDate", v.DueDate)
+		params.Set("due_date", v.DueDate)
 		params.Set("title", v.Title)
 		req, err = http.NewRequest("POST", URL, strings.NewReader((params.Encode())))
 		if err != nil {
