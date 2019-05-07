@@ -2,9 +2,9 @@
 
 Milestone generation for platforms including GitLab and GitHub
 
- [![state](https://img.shields.io/badge/state-stable-green.svg)]() [![release](https://img.shields.io/github/release/okkur-incubator/gomiler.svg)](https://github.com/okkur-incubator/gomiler/releases) [![license](https://img.shields.io/github/license/okkur-incubator/gomiler.svg)](LICENSE)
+ [![state](https://img.shields.io/badge/state-stable-green.svg)]() [![release](https://img.shields.io/github/release/okkur-incubator/gomiler.svg)](https://github.com/okkur/gomiler-incubator/releases) [![license](https://img.shields.io/github/license/okkur-incubator/gomiler.svg)](LICENSE)
 
-**NOTE: This is a work-in-progress, we do not consider it production ready. Use at your own risk.**
+
 
 Generate milestone for ToDo lists, sprints or more.
 
@@ -34,4 +34,5 @@ Best place to start is our [contribution guide](/CONTRIBUTING.md).
 
 ---
 
-Copyright 2017 - The GoMiler Authors
+Copyright 2019 - The GoMiler Authors
+

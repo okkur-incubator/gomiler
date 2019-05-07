@@ -1,8 +1,7 @@
 project:
   name: "GoMiler"
-  state: "unstable"
-  image: ""
-  website: ""
+  state: "stable"
+  website: "https://gomiler.okkur.org"
   oneLiner: "Milestone generation for platforms including GitLab and GitHub"
   description: |
     Generate milestone for ToDo lists, sprints or more.
@@ -17,7 +16,7 @@ vision:
 readme:
   usageExample: |
     ```
-    go get -u -v https://github.com/okkur/gomiler/...
+    go get -u -v https://github.com/okkur-incubator/gomiler/...
     gomiler -namespace=YOUR-NAMESPACE  -project=YOUR-PROJECT -token=123456789 -url=devhub.example.com
     ```
 
@@ -28,7 +27,7 @@ readme:
 
 contributionLinks:
   issueTemplate: "/.github/ISSUE_TEMPLATE.md"
-  starterIssues: "https://github.com/okkur/gomiler/labels/starter%20issue"
+  starterIssues: "https://github.com/okkur-incubator/gomiler/labels/starter%20issue"
 
 emails:
   commercialSupport: "support@okkur.org"
@@ -40,13 +39,14 @@ copyright:
 
 cla:
   copyrightHolder: "nzt.ventures GmbH"
+  mail: "legal@nzt.ventures"
 
 maintainers:
   - name: "Michael Grosser"
     nick: "stp-ip"
 
 repo:
-  link: "https://github.com/okkur-incubator/gomiler/"
+  link: "https://gomiler.okkur.org/code/"
   type: "Github"
 
 badges:
@@ -58,3 +58,6 @@ badges:
   - image: "https://img.shields.io/github/license/okkur-incubator/gomiler.svg"
     link: "LICENSE"
     alt: "license"
+
+reposeed:
+  configVersion: "v1"

@@ -17,7 +17,7 @@ This guide helps make contributing to GoMiler simple and efficient for everyone.
 ### First contribution
 
 If you are starting out contributing to GoMiler, there might be smaller scoped "starter issues" available:
-[Current starter issues](https://github.com/okkur/gomiler/labels/starter%20issue)
+[Current starter issues](https://github.com/okkur-incubator/gomiler/labels/starter%20issue)
 
 ### Report bug
 
