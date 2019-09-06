@@ -1,21 +1,53 @@
 <!--
-# v0.3.0
+# v0.4.0
 _2018_
-  - [Downloads for v0.3.0](https://github.com/okkur/gomiler/releases/tag/v0.3.0)
-  - [Changelog since v0.2.0](#changes-since-v020)
-  - [Documentation for v0.3.0](#documentation-for-v030)
+  - [Downloads for v0.4.0](https://github.com/okkur/gomiler/releases/tag/v0.4.0)
+  - [Changelog since v0.3.2](#changes-since-v032)
+  - [Documentation for v0.4.0](#documentation-for-v040)
+
+## Documentation for v0.4.0
+[Documentation](/docs)
+
+## Changes since v0.3.2
+  -
+
+## Fixes since v0.3.2
+  -
+
+---
+
+-->
+
+# v0.3.2
+2019-09-06
+  - [Downloads for v0.3.2](https://github.com/okkur/gomiler/releases/tag/v0.3.2)
+  - [Changelog since v0.3.1](#changes-since-v031)
+  - [Documentation for v0.3.2](#documentation-for-v032)
 
 ## Documentation for v0.3.0
 [Documentation](/docs)
 
-## Changes since v0.2.0
-  -
+## Changes since v0.3.1
+ - Use vanity url
 
-## Fixes since v0.2.0
-  -
 ---
 
--->
+# v0.3.1
+2019-03-07
+
+## Changes since v0.3.0
+ - Version bump
+
+---
+
+# v0.3.0
+2019-03-07
+
+## Changes since v0.2.0
+ - Version bump
+ - Documentation
+
+---
 
 # v0.2.0
 _2018-04-06_

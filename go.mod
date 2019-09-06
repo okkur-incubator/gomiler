@@ -1,6 +1,6 @@
-module github.com/okkur-incubator/gomiler
+module go.okkur.org/gomiler
 
-go 1.12
+go 1.13
 
 require (
 	github.com/peterhellberg/link v1.0.0

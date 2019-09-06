@@ -20,7 +20,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/okkur-incubator/gomiler/utils"
+	"go.okkur.org/gomiler/utils"
 	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 

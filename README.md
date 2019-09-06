@@ -10,7 +10,7 @@ Generate milestone for ToDo lists, sprints or more.
 
 ## Using GoMiler
 ```
-go get -u -v https://github.com/okkur-incubator/gomiler/...
+go get go.okkur.org/gomiler/...
 gomiler -namespace=YOUR-NAMESPACE  -project=YOUR-PROJECT -token=123456789 -url=devhub.example.com
 ```
 

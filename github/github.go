@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/okkur-incubator/gomiler/utils"
+	"go.okkur.org/gomiler/utils"
 )
 
 // GithubAPI struct

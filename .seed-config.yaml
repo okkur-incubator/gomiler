@@ -5,7 +5,7 @@ project:
   oneLiner: "Milestone generation for platforms including GitLab and GitHub"
   description: |
     Generate milestone for ToDo lists, sprints or more.
-  version: "v0.3.1"
+  version: "v0.3.2"
   mainLicense: "apache2"
   docsLicense: "CCBySa"
 
