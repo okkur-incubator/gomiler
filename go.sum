@@ -1,4 +1,6 @@
 github.com/peterhellberg/link v1.0.0 h1:mUWkiegowUXEcmlb+ybF75Q/8D2Y0BjZtR8cxoKhaQo=
 github.com/peterhellberg/link v1.0.0/go.mod h1:gtSlOT4jmkY8P47hbTc8PTgiDDWpdPbFYl75keYyBB8=
+github.com/peterhellberg/link v1.1.0 h1:s2+RH8EGuI/mI4QwrWGSYQCRz7uNgip9BaM04HKu5kc=
+github.com/peterhellberg/link v1.1.0/go.mod h1:gtSlOT4jmkY8P47hbTc8PTgiDDWpdPbFYl75keYyBB8=
 gopkg.in/jarcoal/httpmock.v1 v1.0.0-20170412085702-cf52904a3cf0 h1:wQvcxZY1FNzBQm8MA4aUNdK4nozflCum8cqis1bUOw4=
 gopkg.in/jarcoal/httpmock.v1 v1.0.0-20170412085702-cf52904a3cf0/go.mod h1:d3R+NllX3X5e0zlG1Rful3uLvsGC/Q3OHut5464DEQw=
