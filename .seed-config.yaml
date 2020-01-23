@@ -16,7 +16,7 @@ vision:
 readme:
   usageExample: |
     ```
-    go get -u -v https://github.com/okkur-incubator/gomiler/...
+    go get go.okkur.org/gomiler/...
     gomiler -namespace=YOUR-NAMESPACE  -project=YOUR-PROJECT -token=123456789 -url=devhub.example.com
     ```
 
@@ -53,7 +53,7 @@ badges:
   - image: "https://img.shields.io/badge/state-stable-green.svg"
     alt: "state"
   - image: "https://img.shields.io/github/release/okkur-incubator/gomiler.svg"
-    link: "https://github.com/okkur/gomiler-incubator/releases"
+    link: "https://gomiler.okkur.org/releases/"
     alt: "release"
   - image: "https://img.shields.io/github/license/okkur-incubator/gomiler.svg"
     link: "LICENSE"

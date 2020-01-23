@@ -1,6 +1,6 @@
 BIN := gomiler
 MAINTAINER := okkur
-VERSION := 0.3.2
+VERSION := `cat $(VERSION_FILE)`
 IMAGE := $(MAINTAINER)/$(BIN):$(VERSION)
 
 BUILD_GOOS := $(if $(GOOS),$(GOOS),linux)
